@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>빙고 관리자</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    textarea { min-height: 340px; resize: vertical; }
+    .actions { display: flex; gap: 10px; margin-top: 12px; }
+    .ok { color: #16a34a; font-size: 0.9rem; min-height: 1.2em; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card">
+      <h1>🛠️ 빙고 관리자</h1>
+      <p class="muted">빙고 항목을 한 줄에 하나씩, 정확히 25개 입력하세요. 저장 후에는 <b>게임 리셋</b>을 눌러야 참가자들이 새 항목으로 시작해요.</p>
+      <textarea id="items-input" placeholder="예) 아침형 인간이다&#10;MBTI가 E로 시작한다&#10;..."></textarea>
+      <p class="muted" id="line-count"></p>
+      <div class="actions">
+        <button class="btn" id="save-btn">항목 저장</button>
+        <button class="btn secondary" id="reset-btn">게임 리셋 (참가자 전원 초기화)</button>
+      </div>
+      <p class="ok" id="ok-msg"></p>
+      <p class="error" id="error-msg"></p>
+    </section>
+  </div>
+  <script src="/admin.js"></script>
+</body>
+</html>

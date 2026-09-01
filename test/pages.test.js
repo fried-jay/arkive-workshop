@@ -11,7 +11,7 @@ test('정적 페이지 서빙', async (t) => {
   const server = app.listen(0);
   t.after(() => server.close());
   const base = `http://127.0.0.1:${server.address().port}`;
-  for (const p of ['/', '/bingo.html', '/board.html']) {
+  for (const p of ['/', '/bingo.html', '/board.html', '/admin.html']) {
     const res = await fetch(base + p);
     assert.equal(res.status, 200, `${p} should be 200`);
     assert.match(res.headers.get('content-type'), /text\/html/);
