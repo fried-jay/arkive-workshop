@@ -1,3 +1,5 @@
 node_modules/
 data.json
 quiz-data.json
+balance-data.json
+tmi-data.json
