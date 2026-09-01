@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>워크숍 게임 매뉴얼</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --paper: #fafaf8;
+    --card: #ffffff;
+    --ink: #1c2333;
+    --muted: #67707f;
+    --line: #e4e5ea;
+    --accent: #4f46e5;
+    --accent-soft: #eef2ff;
+    --quiz: #d97706;   --quiz-soft: #fef3e2;
+    --tmi: #db2777;    --tmi-soft: #fdf0f6;
+    --bal: #0d9488;    --bal-soft: #eafaf7;
+    --warn-bg: #fef9e7;
+    --warn-line: #f0c948;
+    --code-bg: #f1f1f4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #16181f;
+      --card: #1e2129;
+      --ink: #e8eaf0;
+      --muted: #9aa3b2;
+      --line: #333743;
+      --accent: #8f88ff;
+      --accent-soft: #272a45;
+      --quiz: #f0a239;   --quiz-soft: #33291a;
+      --tmi: #f472b6;    --tmi-soft: #351f2b;
+      --bal: #2dd4bf;    --bal-soft: #16302d;
+      --warn-bg: #2e2a1a;
+      --warn-line: #8a7420;
+      --code-bg: #272a33;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #16181f;
+    --card: #1e2129;
+    --ink: #e8eaf0;
+    --muted: #9aa3b2;
+    --line: #333743;
+    --accent: #8f88ff;
+    --accent-soft: #272a45;
+    --quiz: #f0a239;   --quiz-soft: #33291a;
+    --tmi: #f472b6;    --tmi-soft: #351f2b;
+    --bal: #2dd4bf;    --bal-soft: #16302d;
+    --warn-bg: #2e2a1a;
+    --warn-line: #8a7420;
+    --code-bg: #272a33;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    font-size: 15.5px;
+    line-height: 1.7;
+    margin: 0;
+  }
+  .page { max-width: 720px; margin: 0 auto; padding: 48px 20px 80px; }
+
+  .eyebrow {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin: 0 0 8px;
+  }
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0 0 8px;
+    text-wrap: balance;
+  }
+  .lede { color: var(--muted); margin: 0 0 36px; max-width: 60ch; }
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 48px 0 14px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    text-wrap: balance;
+  }
+  h2:first-of-type { border-top: none; padding-top: 0; }
+  h3 { font-size: 1rem; font-weight: 700; margin: 20px 0 8px; }
+  p { margin: 0 0 12px; max-width: 66ch; }
+  .muted { color: var(--muted); }
+  small { color: var(--muted); }
+
+  code, .cmd {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.86em;
+    background: var(--code-bg);
+    border-radius: 6px;
+    padding: 2px 6px;
+  }
+  pre.cmd {
+    display: block;
+    padding: 12px 16px;
+    margin: 10px 0 14px;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 8px;
+    font-size: 0.92rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th { font-weight: 600; color: var(--muted); font-size: 0.82rem; letter-spacing: 0.04em; }
+  td code { white-space: nowrap; }
+  .table-scroll { overflow-x: auto; }
+
+  .game {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--game-color, var(--accent));
+    border-radius: 12px;
+    padding: 22px 24px 18px;
+    margin: 18px 0;
+  }
+  .game h2 {
+    border: none;
+    margin: 0 0 4px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .chip {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--game-color, var(--accent));
+    background: var(--game-soft, var(--accent-soft));
+    border-radius: 999px;
+    padding: 3px 10px;
+    white-space: nowrap;
+  }
+  .game.g-bingo { --game-color: var(--accent); --game-soft: var(--accent-soft); }
+  .game.g-quiz  { --game-color: var(--quiz);   --game-soft: var(--quiz-soft); }
+  .game.g-tmi   { --game-color: var(--tmi);    --game-soft: var(--tmi-soft); }
+  .game.g-bal   { --game-color: var(--bal);    --game-soft: var(--bal-soft); }
+  .game .sub { color: var(--muted); font-size: 0.9rem; margin: 0 0 14px; }
+
+  ol.steps { margin: 8px 0 14px; padding-left: 0; list-style: none; counter-reset: step; }
+  ol.steps li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 38px;
+    margin-bottom: 10px;
+    max-width: 62ch;
+  }
+  ol.steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 1px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--game-soft, var(--accent-soft));
+    color: var(--game-color, var(--accent));
+    font-weight: 700;
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  ul { margin: 8px 0 14px; padding-left: 20px; }
+  ul li { margin-bottom: 6px; max-width: 62ch; }
+
+  .score {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.84rem;
+    font-weight: 600;
+    background: var(--game-soft, var(--accent-soft));
+    color: var(--game-color, var(--accent));
+    border-radius: 8px;
+    padding: 6px 12px;
+    margin: 2px 0 12px;
+  }
+
+  .note {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-line);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    font-size: 0.92rem;
+    max-width: none;
+  }
+  .note b { font-weight: 700; }
+
+  .timeline { margin: 14px 0; padding: 0; list-style: none; }
+  .timeline li {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: 14px;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+  .timeline li:last-child { border-bottom: none; }
+  .timeline .t {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.82rem;
+    color: var(--muted);
+    padding-top: 3px;
+    white-space: nowrap;
+  }
+  .timeline b { font-weight: 700; }
+
+  details {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+    padding: 12px 16px;
+    margin: 10px 0;
+  }
+  summary { font-weight: 600; cursor: pointer; }
+  summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  details p { margin-top: 10px; }
+
+  a { color: var(--accent); }
+  @media (prefers-reduced-motion: no-preference) {
+    details[open] summary ~ * { animation: fade 0.2s ease; }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  }
+</style>
+
+</head>
+<body>
+<div class="page">
+  <p class="eyebrow">진행자 가이드</p>
+  <h1>워크숍 게임 매뉴얼</h1>
+  <p class="lede">폰으로 참여하는 사내 워크숍 게임 4종 — 빙고 · 퀴즈 · TMI 주인 찾기 · 밸런스 게임 — 을 준비하고 진행하는 방법입니다. 아이스브레이킹(슬랙 선착순 댓글)은 웹 밖에서 진행해요.</p>
+
+  <h2>주소 치트시트</h2>
+  <p class="muted">모든 주소는 <code>http://&lt;서버 IP&gt;:3000</code> 뒤에 붙입니다. 참가자에겐 허브(<code>/</code>) 하나만 공유하면 돼요.</p>
+  <div class="table-scroll">
+    <table>
+      <tr><th>게임</th><th>참가자</th><th>현황판 (빔프로젝터)</th><th>관리자 (진행자만)</th></tr>
+      <tr><td>🎯 빙고</td><td><code>/bingo.html</code></td><td><code>/board.html</code></td><td><code>/admin.html</code></td></tr>
+      <tr><td>⚡ 퀴즈</td><td><code>/quiz.html</code></td><td><code>/quiz-board.html</code></td><td><code>/quiz-admin.html</code></td></tr>
+      <tr><td>🤫 TMI</td><td><code>/tmi.html</code></td><td><code>/tmi-board.html</code></td><td><code>/tmi-admin.html</code></td></tr>
+      <tr><td>⚖️ 밸런스</td><td><code>/balance.html</code></td><td><code>/balance-board.html</code></td><td><code>/balance-admin.html</code></td></tr>
+    </table>
+  </div>
+  <p class="muted"><small>관리자 페이지는 별도 비밀번호가 없어요. 링크를 진행자만 알고 있으면 됩니다.</small></p>
+
+  <h2>빠른 시작 (워크숍 당일)</h2>
+  <ol class="steps">
+    <li>서버 컴퓨터에서 실행: <pre class="cmd">npm install   # 최초 1회
+npm start     # http://localhost:3000</pre></li>
+    <li>서버 컴퓨터의 IP 확인 (Mac): <code>ipconfig getifaddr en0</code></li>
+    <li>참가자 전원이 <b>서버와 같은 와이파이</b>에 접속한 뒤, 슬랙에 <code>http://&lt;IP&gt;:3000</code> 공유</li>
+    <li>빔프로젝터에는 진행할 게임의 현황판을 띄우기</li>
+  </ol>
+  <p class="muted"><small>포트를 바꾸려면 <code>PORT=4000 npm start</code>. 모든 진행 상태는 자동 저장되므로 서버가 꺼졌다 켜져도 이어서 진행됩니다.</small></p>
+
+  <div class="game g-bingo">
+    <h2>🎯 빙고 <span class="chip">자유 진행 · 5×5</span></h2>
+    <p class="sub">각자 다른 배치의 빙고판을 받고, 자기에게 해당하는 칸을 자유롭게 칠하는 게임.</p>
+    <h3>준비 (사전)</h3>
+    <ol class="steps">
+      <li><code>/admin.html</code>에서 항목을 한 줄에 하나씩 <b>정확히 25개</b> 입력 후 저장</li>
+      <li>항목을 바꿨다면 <b>게임 리셋</b>을 눌러야 참가자가 새 항목으로 시작해요</li>
+    </ol>
+    <h3>진행</h3>
+    <ol class="steps">
+      <li>참가자가 <code>/bingo.html</code>에서 이름 입력 → 자동으로 랜덤 배치판 생성</li>
+      <li>해당하는 칸을 탭해서 칠하기 (다시 누르면 해제)</li>
+      <li>현황판에 전원의 <b>칠한 칸 수 · 빙고 줄 수</b>가 실시간 정렬 — 빙고 달성자는 금색 하이라이트</li>
+    </ol>
+    <p class="score">우승 기준은 자유 — 예: 3줄 빙고 선착순</p>
+    <h3>팁</h3>
+    <ul>
+      <li>항목은 "아침형 인간이다"처럼 <b>본인이 해당 여부를 판단할 수 있는 문장</b>으로.</li>
+      <li>자율 체크라 양심 게임이에요. 우승자에게 칠한 칸을 소리 내어 검증시키면 그 자체로 토크 콘텐츠가 됩니다.</li>
+    </ul>
+  </div>
+
+  <div class="game g-quiz">
+    <h2>⚡ 퀴즈 <span class="chip">진행자 주도 · 카훗 스타일</span></h2>
+    <p class="sub">진행자가 문제를 열고 닫는 라이브 퀴즈. 빠르게 맞힐수록 유리.</p>
+    <h3>준비 (사전)</h3>
+    <ol class="steps">
+      <li><code>/quiz-admin.html</code>에서 문제 등록. 형식: 빈 줄로 문제 구분, 첫 줄이 문제, 다음 줄들이 보기(2~4개), <b>정답 보기 앞에 *</b>
+        <pre class="cmd">우리 회사 창립연도는?
+2019
+*2020
+2021
+2022</pre></li>
+    </ol>
+    <h3>진행</h3>
+    <ol class="steps">
+      <li>참가자 입장 대기 → <b>▶ 다음 문제</b>로 공개</li>
+      <li>참가자는 문제당 1회 답변 (현황판에 응답 수만 표시, 정답은 비공개)</li>
+      <li>충분히 모이면 <b>✅ 정답 공개</b> → 채점, 정답·응답 분포·순위 공개</li>
+      <li>반복 후 마지막 문제 공개 뒤 한 번 더 ▶ 누르면 최종 순위</li>
+    </ol>
+    <p class="score">정답 +100 &nbsp;·&nbsp; 빠른 정답 1/2/3등 보너스 +30/+20/+10</p>
+    <h3>팁</h3>
+    <ul>
+      <li>공개 직후 응답 분포를 보며 "3번 찍은 6명 누구야?" 하고 리액션 타임을 가지면 좋아요.</li>
+      <li>회사 내부 문제(창립연도, 최다 배달 메뉴 등)가 일반 상식보다 훨씬 잘 먹힙니다.</li>
+    </ul>
+  </div>
+
+  <div class="game g-tmi">
+    <h2>🤫 TMI 주인 찾기 <span class="chip">사전 수집 필요</span></h2>
+    <p class="sub">미리 모은 익명 TMI를 보고 "이거 누구야?"를 맞히는 게임. 서로를 알아가는 용도로 최적.</p>
+    <div class="note"><b>워크숍 며칠 전에</b> 슬랙에 <code>/tmi.html</code> 링크를 뿌려 TMI를 수집해두세요. 최소 4명이 제출해야 시작할 수 있어요. <b>서버에 샘플 제출 4건이 들어 있다면 시작 전 관리자에서 "전체 초기화"로 지워야 합니다.</b></div>
+    <h3>수집 (사전)</h3>
+    <ol class="steps">
+      <li>참가자가 <code>/tmi.html</code>에서 이름 + TMI 한 줄 제출 (다시 제출하면 수정)</li>
+      <li>수집 중엔 현황판·관리자에 <b>제출자 이름만</b> 보이고 내용은 절대 노출되지 않아요</li>
+    </ol>
+    <h3>진행 (현장)</h3>
+    <ol class="steps">
+      <li><code>/tmi-admin.html</code>에서 <b>🚀 게임 시작</b> → TMI마다 "주인은 누구?" 4지선다 자동 출제 (이후 제출 잠김)</li>
+      <li>참가자가 주인을 추리해 답변 — <b>본인 TMI 문제에는 답할 수 없어요</b> (화면에 "들키지 않은 척 해주세요"가 떠요)</li>
+      <li><b>✅ 주인 공개</b> → 주인공 발표 + 순위. 주인공 인터뷰 타임 추천!</li>
+      <li><b>▶ 다음 TMI</b>로 반복</li>
+    </ol>
+    <p class="score">정답 +100 &nbsp;·&nbsp; 빠른 정답 1/2/3등 보너스 +30/+20/+10</p>
+    <h3>리셋 2종</h3>
+    <ul>
+      <li><b>진행 리셋</b>: 점수·진행만 초기화, 제출물 유지 → 같은 TMI로 재플레이</li>
+      <li><b>전체 초기화</b>: 제출물까지 삭제 → 수집부터 다시 (복구 불가!)</li>
+    </ul>
+  </div>
+
+  <div class="game g-bal">
+    <h2>⚖️ 밸런스 게임 <span class="chip">A vs B · 피날레 추천</span></h2>
+    <p class="sub">양자택일 투표 후 분포를 짠 하고 공개하는 게임. 준비가 가장 간단해요.</p>
+    <h3>준비</h3>
+    <ol class="steps">
+      <li><code>/balance-admin.html</code>에서 한 줄에 라운드 하나, <code>A vs B</code> 형식으로 등록
+        <pre class="cmd">평생 마라탕만 먹기 vs 평생 김치찌개만 먹기
+연봉 그대로 주 4일 vs 연봉 1.5배 주 6일</pre></li>
+    </ol>
+    <h3>진행</h3>
+    <ol class="steps">
+      <li><b>▶ 다음 라운드</b> → 참가자가 <code>/balance.html</code>에서 투표 (라운드당 1회)</li>
+      <li>투표 중엔 분포가 <b>아무에게도 안 보여요</b> — 눈치 투표 방지</li>
+      <li><b>✅ 결과 공개</b> → 분포 퍼센트 바 + 다수파 하이라이트 + 순위</li>
+    </ol>
+    <p class="score">다수파 +10 &nbsp;·&nbsp; 동률이면 투표자 전원 +10 &nbsp;·&nbsp; 미투표 0</p>
+    <h3>팁</h3>
+    <ul>
+      <li>공개 전에 소수파로 예상되는 사람 지목해서 이유를 물어보면 공개 순간이 더 살아납니다.</li>
+    </ul>
+  </div>
+
+  <h2>추천 타임라인 (총 90분 기준)</h2>
+  <ul class="timeline">
+    <li><span class="t">사전</span><span><b>TMI 수집</b> — 워크숍 2~3일 전 슬랙에 링크 공유</span></li>
+    <li><span class="t">00:00</span><span><b>아이스브레이킹</b> — 슬랙 공지에 가장 먼저 댓글 단 사람 소개/상품</span></li>
+    <li><span class="t">00:10</span><span><b>🎯 빙고</b> (25분) — 돌아다니며 서로 확인하는 시간을 주면 자연스럽게 섞여요</span></li>
+    <li><span class="t">00:35</span><span><b>🤫 TMI 주인 찾기</b> (25분) — 주인공 인터뷰 포함</span></li>
+    <li><span class="t">01:00</span><span><b>⚡ 퀴즈</b> (15분) — 회사 내부 문제 5~8개</span></li>
+    <li><span class="t">01:15</span><span><b>⚖️ 밸런스 게임</b> (15분) — 가볍게 마무리, 종합 우승자 시상</span></li>
+  </ul>
+
+  <h2>공통 규칙 &amp; 알아두기</h2>
+  <ul>
+    <li><b>이름이 곧 신원</b>이에요. 폰을 바꾸거나 브라우저를 닫아도 같은 이름으로 입장하면 자기 판·점수로 복귀합니다. 반대로 말하면 <b>이름이 겹치면 같은 사람으로 취급</b>되니 동명이인은 별명으로 구분해주세요.</li>
+    <li>새로고침해도 상태가 유지되고, 서버가 재시작돼도 게임별 JSON 파일에서 복원됩니다.</li>
+    <li>현황판이 잠깐 멈춰 보이면 2초 내 자동 재연결돼요. 계속 멈춰 있으면 새로고침.</li>
+    <li>게임 4개는 완전히 독립적이라 참가자 명단·점수가 공유되지 않아요. 종합 우승은 진행자가 게임별 순위로 집계하세요.</li>
+  </ul>
+
+  <h2>문제 해결</h2>
+  <details>
+    <summary>참가자가 접속이 안 돼요</summary>
+    <p>참가자 폰이 서버 컴퓨터와 <b>같은 와이파이</b>인지 먼저 확인하세요 (사내 게스트망·개인 핫스팟은 분리된 경우가 많아요). 다음으로 서버 컴퓨터 방화벽이 3000 포트를 막고 있는지 확인합니다.</p>
+  </details>
+  <details>
+    <summary>빙고에서 "아직 게임이 준비되지 않았어요"가 떠요</summary>
+    <p>관리자가 항목 25개를 아직 저장하지 않은 상태예요. <code>/admin.html</code>에서 항목을 저장하면 바로 입장할 수 있어요.</p>
+  </details>
+  <details>
+    <summary>퀴즈/밸런스에서 "다음" 버튼이 안 먹어요</summary>
+    <p>문제가 열려 있는 동안엔 다음으로 넘어갈 수 없어요. 먼저 <b>정답 공개(결과 공개)</b>를 눌러 현재 라운드를 닫아주세요.</p>
+  </details>
+  <details>
+    <summary>실수로 리셋을 눌렀어요</summary>
+    <p>리셋은 복구할 수 없어요. 참가자들이 다시 이름을 입력해 입장하면 새 판으로 시작합니다. TMI의 "진행 리셋"은 제출물이 남아 있으니 다시 시작만 누르면 돼요.</p>
+  </details>
+  <details>
+    <summary>새 게임 데이터로 완전히 새로 시작하고 싶어요</summary>
+    <p>서버를 끄고 레포 루트의 <code>data.json</code>, <code>quiz-data.json</code>, <code>balance-data.json</code>, <code>tmi-data.json</code>을 지운 뒤 다시 켜면 완전 초기 상태가 됩니다. 보통은 각 관리자 화면의 리셋 버튼으로 충분해요.</p>
+  </details>
+
+  <p class="muted" style="margin-top:40px"><small>워크숍 게임 웹 · Express + SSE · 상태는 서버의 JSON 파일에 저장 · 소스는 arkive-workshop 레포</small></p>
+</div>
+</body>
+</html>
