@@ -39,22 +39,33 @@ function el(tag, className, text) {
 
 function render() {
   if (!snapshot) return;
+  const collecting = snapshot.status === 'collecting';
 
-  if (snapshot.status === 'collecting') {
+  // 수집 중이거나 아직 입장 전이면 입장/제출 화면
+  if (collecting || !me) {
     gameView.classList.add('hidden');
     submitView.classList.remove('hidden');
+    // 수집이 끝나면 TMI 입력은 잠기고 이름만으로 참가
+    document.getElementById('tmi-input').classList.toggle('hidden', !collecting);
+    document.getElementById('submit-btn').classList.toggle('hidden', !collecting);
+    document.getElementById('join-only-btn').textContent = collecting ? 'TMI 없이 참가만' : '참가하기';
+    document.getElementById('join-hint').textContent = collecting
+      ? 'TMI를 제출하면 내 문제도 출제돼요. 참가만 하면 맞히기에만 참여합니다.'
+      : '수집은 마감됐지만, 이름을 입력하면 지금부터 맞히기에 참여할 수 있어요!';
     if (me) {
       myTmiBox.classList.remove('hidden');
-      myTmiBox.textContent = `✅ ${me.name}님 제출 완료 — "${me.tmi}"`;
+      myTmiBox.textContent = me.submitted
+        ? `✅ ${me.name}님 제출 완료 — "${me.tmi}"`
+        : `✅ ${me.name}님 참가 완료 (맞히기 전용)`;
     }
-    return;
+    if (collecting) return;
   }
+  if (!me) return;
 
-  // 진행 중인데 제출 안 한 사람은 구경 화면
   submitView.classList.add('hidden');
   gameView.classList.remove('hidden');
-  document.getElementById('greeting').textContent = me ? me.name : '관전 중';
-  document.getElementById('my-score').textContent = me ? `${me.score}점` : '';
+  document.getElementById('greeting').textContent = me.name;
+  document.getElementById('my-score').textContent = `${me.score}점`;
   stage.replaceChildren();
 
   if (snapshot.status === 'finished') {
@@ -93,9 +104,8 @@ function render() {
   stage.appendChild(choices);
 
   if (snapshot.status === 'question') {
-    if (me?.isOwner) stage.appendChild(el('p', 'result-msg waiting', '🤭 내 TMI다! 들키지 않은 척 해주세요.'));
-    else if (me?.answeredChoice != null) stage.appendChild(el('p', 'muted waiting', '답 제출 완료! 공개를 기다려주세요.'));
-    else if (!me) stage.appendChild(el('p', 'muted waiting', 'TMI를 제출하지 않아 관전만 가능해요.'));
+    if (me.isOwner) stage.appendChild(el('p', 'result-msg waiting', '🤭 내 TMI다! 들키지 않은 척 해주세요.'));
+    else if (me.answeredChoice != null) stage.appendChild(el('p', 'muted waiting', '답 제출 완료! 공개를 기다려주세요.'));
   }
   if (snapshot.status === 'revealed' && me && !me.isOwner) {
     const correct = me.answeredChoice === r.answerIndex;
@@ -147,6 +157,17 @@ document.getElementById('submit-form').addEventListener('submit', async (e) => {
       name: document.getElementById('name-input').value,
       tmi: document.getElementById('tmi-input').value,
     });
+    localStorage.setItem('tmi:participantId', me.participantId);
+    render();
+  } catch (err) {
+    submitError.textContent = ERROR_MESSAGES[err.message] || '문제가 발생했어요.';
+  }
+});
+
+document.getElementById('join-only-btn').addEventListener('click', async () => {
+  submitError.textContent = '';
+  try {
+    me = await api('POST', '/api/tmi/join', { name: document.getElementById('name-input').value });
     localStorage.setItem('tmi:participantId', me.participantId);
     render();
   } catch (err) {

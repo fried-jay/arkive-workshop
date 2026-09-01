@@ -14,8 +14,8 @@ const {
   revealBalance, resetBalance, balanceSnapshot, balanceParticipantView,
 } = require('./lib/balance');
 const {
-  createTmi, submitTmi, startTmi, answerTmi, revealTmi, nextTmi,
-  resetTmi, clearTmi, tmiSnapshot, tmiParticipantView,
+  createTmi, submitTmi, joinTmi, startTmi, answerTmi, revealTmi, nextTmi,
+  resetTmi, clearTmi, reviveTmi, tmiSnapshot, tmiParticipantView,
 } = require('./lib/tmi');
 const { loadState, createSaver } = require('./lib/persist');
 
@@ -47,7 +47,7 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, sa
   const game = loadState(dataFile) ?? createGame();
   const quiz = loadState(quizDataFile) ?? createQuiz();
   const balance = loadState(balanceDataFile) ?? createBalance();
-  const tmi = loadState(tmiDataFile) ?? createTmi();
+  const tmi = reviveTmi(loadState(tmiDataFile)) ?? createTmi();
 
   const app = express();
   app.use(express.json());
@@ -196,6 +196,12 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, sa
   }
 
   // ---------- TMI ----------
+  app.post('/api/tmi/join', (req, res) => handle(res, () => {
+    const p = joinTmi(tmi, req.body?.name);
+    broadcastTmi();
+    res.json(tmiParticipantView(tmi, p.id));
+  }));
+
   app.post('/api/tmi/submit', (req, res) => handle(res, () => {
     const { name, tmi: text } = req.body ?? {};
     const p = submitTmi(tmi, name, text);

@@ -71,7 +71,7 @@ test('밸런스 흐름: rounds → join → vote → reveal 점수/분포', asyn
   assert.equal(snap.totalRounds, 1);
 });
 
-test('TMI 흐름: submit → start → answer(본인 불가) → reveal → reset/clear', async (t) => {
+test('TMI 흐름: submit/join → start → answer(본인 불가) → reveal → reset/clear', async (t) => {
   const { server, base } = startServer();
   t.after(() => stop(server));
 
@@ -79,13 +79,20 @@ test('TMI 흐름: submit → start → answer(본인 불가) → reveal → rese
   assert.equal(res.status, 400);
 
   const ids = {};
-  for (const name of ['가', '나', '다', '라']) {
+  for (const name of ['가', '나', '다']) {
     ids[name] = (await post(base, '/api/tmi/submit', { name, tmi: `${name}의 비밀` })).body.participantId;
   }
+  // '라'는 TMI 없이 추리 전용 참가
+  res = await post(base, '/api/tmi/join', { name: '라' });
+  assert.equal(res.status, 200);
+  assert.equal(res.body.submitted, false);
+  ids['라'] = res.body.participantId;
 
-  // 시작 전 스냅샷에 TMI 내용 미노출
+  // 시작 전 스냅샷에 TMI 내용 미노출, 제출/참가 구분 표시
   let snap = await state(base, '/api/tmi/state');
-  assert.equal(snap.entryCount, 4);
+  assert.equal(snap.participantCount, 4);
+  assert.equal(snap.submittedCount, 3);
+  assert.equal(snap.members.find((m) => m.name === '라').submitted, false);
   assert.equal(JSON.stringify(snap).includes('비밀'), false);
 
   res = await post(base, '/api/tmi/admin/start');
@@ -112,10 +119,10 @@ test('TMI 흐름: submit → start → answer(본인 불가) → reveal → rese
   await post(base, '/api/tmi/admin/reset');
   snap = await state(base, '/api/tmi/state');
   assert.equal(snap.status, 'collecting');
-  assert.equal(snap.entryCount, 4);
+  assert.equal(snap.participantCount, 4);
   await post(base, '/api/tmi/admin/clear');
   snap = await state(base, '/api/tmi/state');
-  assert.equal(snap.entryCount, 0);
+  assert.equal(snap.participantCount, 0);
 });
 
 test('SSE 채널 분리: balance/tmi 이벤트 스트림 각각 즉시 스냅샷', async (t) => {

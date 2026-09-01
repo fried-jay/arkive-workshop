@@ -25,20 +25,20 @@ async function post(url) {
 
 function renderStatus(snap) {
   const where = snap.status === 'question' || snap.status === 'revealed'
-    ? ` (TMI ${snap.currentIndex + 1}/${snap.totalRounds}, 응답 ${snap.answeredCount}/${snap.entryCount - 1})`
-    : ` (제출 ${snap.entryCount}명)`;
+    ? ` (TMI ${snap.currentIndex + 1}/${snap.totalRounds}, 응답 ${snap.answeredCount}/${snap.participantCount - 1})`
+    : ` (참가 ${snap.participantCount}명 · 제출 ${snap.submittedCount}명)`;
   statusBox.textContent = (STATUS_LABEL[snap.status] || snap.status) + where;
-  namesBox.replaceChildren(...snap.names.map((name) => {
+  namesBox.replaceChildren(...snap.members.map((m) => {
     const chip = document.createElement('span');
     chip.className = 'name-chip';
-    chip.textContent = name;
+    chip.textContent = m.submitted ? `✓ ${m.name}` : m.name;
     return chip;
   }));
 }
 
 const ACTION_ERRORS = {
   WRONG_STATE: '지금 상태에서는 할 수 없는 동작이에요.',
-  NOT_ENOUGH_ENTRIES: '제출이 4명 이상 모여야 시작할 수 있어요.',
+  NOT_ENOUGH_ENTRIES: '참가자 4명 이상 + TMI 제출 1건 이상이어야 시작할 수 있어요.',
 };
 
 for (const [id, url, label, confirmMsg] of [

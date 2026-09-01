@@ -16,18 +16,18 @@ function el(tag, className, text) {
 function render(snap) {
   stage.replaceChildren();
   answered.textContent = '';
-  progress.textContent = `제출 ${snap.entryCount}명`;
+  progress.textContent = `참가 ${snap.participantCount}명 · TMI 제출 ${snap.submittedCount}명`;
 
   if (snap.status === 'collecting') {
-    stage.appendChild(el('p', 'muted waiting', 'TMI 수집 중! 폰으로 접속해서 나만 아는 TMI를 제출해주세요.'));
+    stage.appendChild(el('p', 'muted waiting', 'TMI 수집 중! 폰으로 접속해서 나만 아는 TMI를 제출해주세요. (제출 없이 참가만도 가능)'));
     const names = el('div', 'names');
-    for (const name of snap.names) names.appendChild(el('span', 'name-chip', name));
+    for (const m of snap.members) names.appendChild(el('span', 'name-chip', m.submitted ? `✓ ${m.name}` : m.name));
     stage.appendChild(names);
   } else if (snap.status === 'finished') {
     stage.appendChild(el('p', 'waiting', '🎊 게임 종료! 최종 순위입니다.'));
   } else {
-    progress.textContent = `TMI ${snap.currentIndex + 1} / ${snap.totalRounds} · 참가자 ${snap.entryCount}명`;
-    answered.textContent = `응답 ${snap.answeredCount} / ${snap.entryCount - 1}`;
+    progress.textContent = `TMI ${snap.currentIndex + 1} / ${snap.totalRounds} · 참가자 ${snap.participantCount}명`;
+    answered.textContent = `응답 ${snap.answeredCount} / ${snap.participantCount - 1}`;
     stage.appendChild(el('p', 'tmi-text', `"${snap.round.tmi}"`));
     const choices = el('div', 'choices');
     snap.round.choices.forEach((name, i) => {
