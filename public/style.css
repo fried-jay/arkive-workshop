@@ -1,0 +1,101 @@
+:root {
+  --bg: #f6f7fb;
+  --card: #ffffff;
+  --text: #1c2333;
+  --muted: #6b7280;
+  --accent: #4f46e5;
+  --accent-soft: #eef2ff;
+  --marked: #4f46e5;
+  --marked-text: #ffffff;
+  --gold: #f59e0b;
+  --border: #e5e7eb;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.wrap { max-width: 560px; margin: 0 auto; padding: 16px; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+h1 { font-size: 1.4rem; margin: 0 0 4px; }
+.muted { color: var(--muted); font-size: 0.9rem; }
+
+.btn {
+  display: inline-block;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 700;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn:active { transform: scale(0.98); }
+.btn.secondary { background: var(--accent-soft); color: var(--accent); }
+
+input[type="text"], textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.cell {
+  aspect-ratio: 1;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  padding: 2px;
+  font-size: clamp(0.55rem, 2.4vw, 0.78rem);
+  line-height: 1.15;
+  word-break: keep-all;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text);
+}
+.cell.marked {
+  background: var(--marked);
+  border-color: var(--marked);
+  color: var(--marked-text);
+  font-weight: 700;
+}
+
+.statusbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  font-weight: 700;
+}
+.bingo-count { color: var(--accent); }
+.error { color: #dc2626; font-size: 0.9rem; min-height: 1.2em; margin-top: 8px; }
+.hidden { display: none; }

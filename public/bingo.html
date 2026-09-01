@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>워크숍 빙고</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="wrap">
+    <section id="join-view" class="card">
+      <h1>🎯 워크숍 빙고</h1>
+      <p class="muted">이름을 입력하면 나만의 빙고판이 만들어져요.</p>
+      <form id="join-form">
+        <input type="text" id="name-input" placeholder="이름" autocomplete="off" maxlength="20">
+        <p class="error" id="join-error"></p>
+        <button class="btn" type="submit">입장하기</button>
+      </form>
+    </section>
+
+    <section id="game-view" class="card hidden">
+      <h1 id="greeting"></h1>
+      <p class="muted">해당하는 칸을 눌러서 칠하세요. 다시 누르면 해제돼요.</p>
+      <div class="grid" id="grid"></div>
+      <div class="statusbar">
+        <span id="marked-count"></span>
+        <span class="bingo-count" id="bingo-count"></span>
+      </div>
+      <p class="error" id="game-error"></p>
+    </section>
+  </div>
+  <script src="/bingo.js"></script>
+</body>
+</html>
