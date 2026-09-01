@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>캐치마인드 관리자</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    .ok { color: #16a34a; font-size: 0.9rem; min-height: 1.2em; margin-top: 8px; }
+    .status-box {
+      margin-top: 16px; padding: 14px; border: 1px solid var(--border);
+      border-radius: 12px; background: var(--accent-soft); font-weight: 700;
+    }
+    .people { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .person {
+      border: 1px solid var(--border); background: var(--card); border-radius: 999px;
+      padding: 8px 16px; font-weight: 700; cursor: pointer; font-family: inherit; font-size: 0.95rem; color: var(--text);
+    }
+    .person.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .link-box {
+      margin-top: 12px; padding: 12px; background: var(--bg); border: 1px dashed var(--border);
+      border-radius: 10px; font-family: ui-monospace, monospace; font-size: 0.82rem; word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card">
+      <h1>🛠️ 캐치마인드 관리자</h1>
+      <p class="muted">① 그릴 사람을 아래에서 선택하고 <b>그리기 링크 발급</b> → ② 링크를 복사해서 그 사람에게 슬랙으로 보내기 → ③ 그 사람이 그림+정답을 제출하면 자동으로 맞추기가 시작돼요. 아무도 못 맞히면 <b>정답 공개</b>로 스킵.</p>
+      <div class="status-box" id="status-box">상태 불러오는 중...</div>
+      <div class="people" id="people"></div>
+      <div class="actions">
+        <button class="btn" id="assign-btn">🔗 그리기 링크 발급</button>
+      </div>
+      <div class="link-box hidden" id="link-box"></div>
+      <div class="actions hidden" id="copy-row">
+        <button class="btn secondary" id="copy-btn">📋 링크 복사</button>
+      </div>
+      <div class="actions">
+        <button class="btn" id="reveal-btn">✅ 정답 공개 (스킵)</button>
+        <button class="btn secondary" id="reset-btn">게임 리셋</button>
+      </div>
+      <p class="ok" id="ok-msg"></p>
+      <p class="error" id="error-msg"></p>
+    </section>
+  </div>
+  <script src="/catchmind-admin.js"></script>
+</body>
+</html>

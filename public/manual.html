@@ -261,6 +261,7 @@
       <tr><td>⚡ 퀴즈</td><td><code>/quiz.html</code></td><td><code>/quiz-board.html</code></td><td><code>/quiz-admin.html</code></td></tr>
       <tr><td>🤫 TMI</td><td><code>/tmi.html</code></td><td><code>/tmi-board.html</code></td><td><code>/tmi-admin.html</code></td></tr>
       <tr><td>⚖️ 밸런스</td><td><code>/balance.html</code></td><td><code>/balance-board.html</code></td><td><code>/balance-admin.html</code></td></tr>
+      <tr><td>🎨 캐치마인드</td><td><code>/catchmind.html</code></td><td><code>/catchmind-board.html</code></td><td><code>/catchmind-admin.html</code></td></tr>
     </table>
   </div>
   <p class="muted"><small>주소를 외울 필요 없이 <b>진행자 콘솔</b>(<code>/host.html</code>)에서 모든 관리자·현황판을 메뉴로 열 수 있어요. 관리자 페이지는 별도 비밀번호가 없으니 링크를 진행자만 알고 있으면 됩니다.</small></p>
@@ -366,6 +367,26 @@ npm start     # http://localhost:3000</pre></li>
     <h3>팁</h3>
     <ul>
       <li>공개 전에 소수파로 예상되는 사람 지목해서 이유를 물어보면 공개 순간이 더 살아납니다.</li>
+    </ul>
+  </div>
+
+  <div class="game" style="--game-color:#7c3aed; --game-soft:#f3ecfd">
+    <h2>🎨 캐치마인드 <span class="chip">그리기 링크 방식</span></h2>
+    <p class="sub">진행자가 지목한 사람이 그림+정답을 제출하면, 나머지가 폰으로 정답을 입력해 맞추는 게임.</p>
+    <h3>진행</h3>
+    <ol class="steps">
+      <li>참가자가 <code>/catchmind.html</code>에서 이름 입장</li>
+      <li>진행자: <code>/catchmind-admin.html</code>에서 그릴 사람 선택 → <b>🔗 그리기 링크 발급</b> → 복사해서 그 사람에게 슬랙으로 전달</li>
+      <li>그 사람: 링크 열고 <b>정답 단어 입력 + 캔버스에 그림 → 제출</b> (제출 전엔 아무에게도 안 보여요)</li>
+      <li>제출되면 현황판·참가자 폰에 그림 공개 → 폰으로 정답 입력 (무제한, 오답은 피드에 흘러감)</li>
+      <li>맞히면 즉시 발표. 아무도 못 맞히면 진행자가 <b>✅ 정답 공개</b>로 스킵</li>
+      <li>다음 라운드 = 다음 사람에게 링크 새로 발급 (링크는 라운드마다 1회용)</li>
+    </ol>
+    <p class="score">맞힌 사람 +100 &nbsp;·&nbsp; 그린 사람 +50 &nbsp;·&nbsp; 스킵 시 0</p>
+    <h3>팁</h3>
+    <ul>
+      <li>정답 판정은 띄어쓰기·대소문자를 무시해요 ("맥 북" = "맥북").</li>
+      <li>그림 실력보다 정답 단어 선택이 난이도를 좌우해요 — 사내 용어를 섞으면 재밌습니다.</li>
     </ul>
   </div>
 

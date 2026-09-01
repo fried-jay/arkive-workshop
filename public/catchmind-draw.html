@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>캐치마인드 그리기</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    canvas { width: 100%; border: 2px solid var(--border); border-radius: 12px; background: #fff; touch-action: none; display: block; }
+    .toolbar { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; align-items: center; }
+    .color {
+      width: 34px; height: 34px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; padding: 0;
+    }
+    .color.active { border-color: var(--accent); }
+    .tool-btn {
+      border: 1px solid var(--border); background: var(--card); border-radius: 10px;
+      padding: 8px 12px; font-size: 0.9rem; font-weight: 700; cursor: pointer; color: var(--text); font-family: inherit;
+    }
+    .tool-btn.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+    .feed { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+    .feed li { background: var(--bg); border-radius: 8px; padding: 8px 12px; font-size: 0.9rem; }
+    .waiting { text-align: center; padding: 30px 0; }
+    .owner-reveal { text-align: center; font-size: 1.2rem; font-weight: 800; margin-top: 16px; color: #16a34a; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card hidden" id="invalid-view">
+      <h1>🔗 링크가 유효하지 않아요</h1>
+      <p class="muted">이미 사용됐거나 새 링크가 발급됐을 수 있어요. 진행자에게 다시 요청해주세요.</p>
+    </section>
+
+    <section class="card hidden" id="draw-view">
+      <h1>🎨 <span id="drawer-name"></span>님, 그려주세요!</h1>
+      <p class="muted">정답 단어를 정하고 그림으로 표현하세요. 제출하면 모두에게 공개되고 맞추기가 시작돼요. (정답 단어는 아무도 못 봅니다)</p>
+      <input type="text" id="word-input" placeholder="정답 단어 (예: 맥북)" autocomplete="off" maxlength="30">
+      <div class="toolbar">
+        <button class="color active" type="button" style="background:#111827" data-color="#111827" aria-label="검정"></button>
+        <button class="color" type="button" style="background:#e11d48" data-color="#e11d48" aria-label="빨강"></button>
+        <button class="color" type="button" style="background:#2563eb" data-color="#2563eb" aria-label="파랑"></button>
+        <button class="color" type="button" style="background:#16a34a" data-color="#16a34a" aria-label="초록"></button>
+        <button class="tool-btn" type="button" id="size-btn">굵게</button>
+        <button class="tool-btn" type="button" id="undo-btn">↩ 한 획 취소</button>
+        <button class="tool-btn" type="button" id="clear-btn">전체 지우기</button>
+      </div>
+      <canvas id="canvas"></canvas>
+      <p class="error" id="draw-error"></p>
+      <p style="margin-top:12px"><button class="btn" id="submit-btn">✅ 제출하기 (공개!)</button></p>
+    </section>
+
+    <section class="card hidden" id="done-view">
+      <h1>🙌 제출 완료!</h1>
+      <p class="muted">다들 맞추는 중이에요. 오답이 아래로 흘러갑니다.</p>
+      <ul class="feed" id="feed"></ul>
+      <p class="owner-reveal hidden" id="result"></p>
+    </section>
+  </div>
+  <script src="/catchmind-canvas.js"></script>
+  <script src="/catchmind-draw.js"></script>
+</body>
+</html>
