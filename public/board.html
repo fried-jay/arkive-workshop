@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>빙고 현황판</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .wrap { max-width: 900px; }
+    .board-list { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+    .row {
+      display: grid;
+      grid-template-columns: 2.2rem 1fr auto auto;
+      gap: 12px;
+      align-items: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 1.15rem;
+    }
+    .row.has-bingo { border-color: var(--gold); background: #fffbeb; }
+    .rank { font-weight: 800; color: var(--muted); }
+    .name { font-weight: 700; }
+    .bar-wrap { display: flex; align-items: center; gap: 10px; min-width: 220px; }
+    .bar { flex: 1; height: 10px; border-radius: 5px; background: var(--accent-soft); overflow: hidden; }
+    .bar > div { height: 100%; background: var(--accent); border-radius: 5px; transition: width 0.3s; }
+    .count { color: var(--muted); font-variant-numeric: tabular-nums; }
+    .lines { font-weight: 800; color: var(--gold); min-width: 5.5rem; text-align: right; }
+    .empty { text-align: center; padding: 40px 0; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🎯 빙고 현황판</h1>
+    <p class="muted" id="summary"></p>
+    <ul class="board-list" id="list"></ul>
+    <p class="muted empty hidden" id="empty">아직 참가자가 없어요. 폰으로 접속해서 이름을 입력하면 여기 나타납니다!</p>
+  </div>
+  <script src="/board.js"></script>
+</body>
+</html>
