@@ -29,6 +29,10 @@ const {
   createManito, joinManito, setNote, startManito, guessManito,
   revealManito, resetManito, manitoSnapshot, manitoParticipantView,
 } = require('./lib/manito');
+const {
+  createProphecy, submitProphecy, sealProphecy, revealProphecy, markHit,
+  resetProphecy, prophecySnapshot, prophecyParticipantView,
+} = require('./lib/prophecy');
 const { loadState, createSaver } = require('./lib/persist');
 
 const ERROR_STATUS = {
@@ -44,6 +48,7 @@ const ERROR_STATUS = {
   GUESS_REQUIRED: 400,
   STROKE_INVALID: 400,
   MISSIONS_INVALID: 400,
+  PROPHECY_REQUIRED: 400,
   MISSION_INVALID: 400,
   SELF_ACCUSE: 400,
   MISSION_NOT_READY: 409,
@@ -69,6 +74,7 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
   catchmindDataFile ??= path.join(dir, 'catchmind-data.json');
   const missionDataFile = path.join(dir, 'mission-data.json');
   const manitoDataFile = path.join(dir, 'manito-data.json');
+  const prophecyDataFile = path.join(dir, 'prophecy-data.json');
 
   const game = loadState(dataFile) ?? createGame();
   const quiz = loadState(quizDataFile) ?? createQuiz();
@@ -77,6 +83,7 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
   const catchmind = loadState(catchmindDataFile) ?? createCatchmind();
   const mission = loadState(missionDataFile) ?? createMission();
   const manito = loadState(manitoDataFile) ?? createManito();
+  const prophecy = loadState(prophecyDataFile) ?? createProphecy();
 
   const app = express();
   app.use(express.json({ limit: '2mb' })); // 캐치마인드 그림 제출용 여유
@@ -110,6 +117,7 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
   const broadcastCatchmind = createSseChannel('/api/catchmind/events', catchmind, catchmindDataFile, catchmindSnapshot);
   const broadcastMission = createSseChannel('/api/mission/events', mission, missionDataFile, missionSnapshot);
   const broadcastManito = createSseChannel('/api/manito/events', manito, manitoDataFile, manitoSnapshot);
+  const broadcastProphecy = createSseChannel('/api/prophecy/events', prophecy, prophecyDataFile, prophecySnapshot);
 
   function handle(res, fn) {
     try {
@@ -375,7 +383,37 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
     }));
   }
 
-  return { app, game, quiz, balance, tmi, catchmind, mission, manito };
+  // ---------- 몰래 예언 ----------
+  app.post('/api/prophecy/submit', (req, res) => handle(res, () => {
+    const { name, text } = req.body ?? {};
+    const p = submitProphecy(prophecy, name, text);
+    broadcastProphecy();
+    res.json(prophecyParticipantView(prophecy, p.id));
+  }));
+
+  meRoute('/api/prophecy/me/:participantId', prophecy, prophecyParticipantView);
+
+  app.get('/api/prophecy/state', (_req, res) => res.json(prophecySnapshot(prophecy)));
+
+  app.post('/api/prophecy/admin/mark', (req, res) => handle(res, () => {
+    const { name, hit } = req.body ?? {};
+    const target = prophecy.participants.find((p) => p.name === name);
+    markHit(prophecy, target?.id ?? 'unknown', hit);
+    broadcastProphecy();
+    res.json({ ok: true });
+  }));
+
+  for (const [route, action] of [
+    ['seal', sealProphecy], ['reveal', revealProphecy], ['reset', resetProphecy],
+  ]) {
+    app.post(`/api/prophecy/admin/${route}`, (_req, res) => handle(res, () => {
+      action(prophecy);
+      broadcastProphecy();
+      res.json({ ok: true });
+    }));
+  }
+
+  return { app, game, quiz, balance, tmi, catchmind, mission, manito, prophecy };
 }
 
 module.exports = { createServer };

@@ -264,6 +264,7 @@
       <tr><td>🎨 캐치마인드</td><td><code>/catchmind.html</code></td><td><code>/catchmind-board.html</code></td><td><code>/catchmind-admin.html</code></td></tr>
       <tr><td>🥷 비밀미션</td><td><code>/mission.html</code></td><td><code>/mission-board.html</code></td><td><code>/mission-admin.html</code></td></tr>
       <tr><td>💌 마니또</td><td><code>/manito.html</code></td><td><code>/manito-board.html</code></td><td><code>/manito-admin.html</code></td></tr>
+      <tr><td>🔮 몰래 예언</td><td><code>/prophecy.html</code></td><td><code>/prophecy-board.html</code></td><td><code>/prophecy-admin.html</code></td></tr>
     </table>
   </div>
   <p class="muted"><small>주소를 외울 필요 없이 <b>진행자 콘솔</b>(<code>/host.html</code>)에서 모든 관리자·현황판을 메뉴로 열 수 있어요. 관리자 페이지는 별도 비밀번호가 없으니 링크를 진행자만 알고 있으면 됩니다.</small></p>
@@ -422,11 +423,23 @@ npm start     # http://localhost:3000</pre></li>
     </ul>
   </div>
 
+  <div class="game" style="--game-color:#0891b2; --game-soft:#e8f7fb">
+    <h2>🔮 몰래 예언 <span class="chip">시작 봉인 · 마무리 대공개</span></h2>
+    <p class="sub">오늘 일어날 일을 각자 몰래 예언해 봉인하고, 마무리에 공개하며 다 같이 판정하는 게임.</p>
+    <h3>진행</h3>
+    <ol class="steps">
+      <li>워크숍 시작 때 각자 <code>/prophecy.html</code>에서 예언 1개 제출 — "오늘 누군가 커피를 쏟는다" 류</li>
+      <li>진행자가 <b>🔒 봉인</b> (시작 직후에! 늦게 내면 이미 일어난 일을 적는 반칙 가능)</li>
+      <li>마무리에 <b>🔮 대공개</b> → 진행자가 하나씩 읽으며 다 같이 "됐다/안 됐다" 판정, 관리자에서 ⭕/❌ 마킹</li>
+      <li>적중 +100. 몰래 상황을 유도해 적중시키는 자기실현 예언도 인정 😏</li>
+    </ol>
+  </div>
+
   <h2>추천 타임라인 (총 90분 기준)</h2>
   <ul class="timeline">
     <li><span class="t">사전</span><span><b>TMI 수집</b> — 워크숍 2~3일 전 슬랙에 링크 공유</span></li>
     <li><span class="t">00:00</span><span><b>아이스브레이킹</b> — 슬랙 공지에 가장 먼저 댓글 단 사람 소개/상품</span></li>
-    <li><span class="t">00:05</span><span><b>🥷 비밀미션 + 💌 마니또 시작</b> — 하루 종일 백그라운드로 진행, 마무리 때 공개</span></li>
+    <li><span class="t">00:05</span><span><b>🥷 비밀미션 + 💌 마니또 + 🔮 예언 봉인</b> — 하루 종일 백그라운드로 진행, 마무리 때 공개</span></li>
     <li><span class="t">00:10</span><span><b>🎯 빙고</b> (25분) — 돌아다니며 서로 확인하는 시간을 주면 자연스럽게 섞여요</span></li>
     <li><span class="t">00:35</span><span><b>🤫 TMI 주인 찾기</b> (25분) — 주인공 인터뷰 포함</span></li>
     <li><span class="t">01:00</span><span><b>⚡ 퀴즈</b> (15분) — 회사 내부 문제 5~8개</span></li>

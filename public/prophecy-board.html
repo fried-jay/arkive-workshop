@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>몰래 예언 현황판</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .wrap { max-width: 900px; }
+    .waiting { text-align: center; padding: 60px 0; font-size: 1.3rem; }
+    .names { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; justify-content: center; }
+    .name-chip { background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 8px 16px; font-weight: 700; }
+    .list { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+    .list li {
+      display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center;
+      background: var(--card); border: 2px solid var(--border); border-radius: 14px;
+      padding: 16px 20px; font-size: 1.15rem; font-weight: 700;
+    }
+    .list li.hit { border-color: #16a34a; background: #f0fdf4; }
+    .list li.miss { opacity: 0.65; }
+    .who { color: var(--muted); font-size: 0.9rem; white-space: nowrap; }
+    .verdict { font-size: 1.4rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🔮 몰래 예언</h1>
+    <p class="muted" id="progress"></p>
+    <div id="stage"></div>
+  </div>
+  <script src="/prophecy-board.js"></script>
+</body>
+</html>

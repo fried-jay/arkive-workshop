@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>몰래 예언</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .prophecy-card {
+      background: var(--accent-soft);
+      border: 2px dashed var(--accent);
+      border-radius: 14px;
+      padding: 18px;
+      margin-top: 14px;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+    .prophecy-card .label { display: block; font-size: 0.78rem; color: var(--accent); letter-spacing: 0.08em; margin-bottom: 4px; }
+    .prophecy-card.hit { border-color: #16a34a; background: #f0fdf4; }
+    .prophecy-card.miss { border-color: #dc2626; background: #fef2f2; }
+    .waiting { text-align: center; padding: 24px 0; }
+    .result-msg { font-size: 1.1rem; font-weight: 800; margin-top: 14px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section id="submit-view" class="card">
+      <h1>🔮 몰래 예언</h1>
+      <p class="muted">오늘 워크숍에서 일어날 일을 몰래 예언하세요. 봉인됐다가 마무리에 공개되고, 적중하면 +100! (몰래 상황을 유도해서 적중시키는 것도 실력입니다 😏)</p>
+      <form id="submit-form">
+        <input type="text" id="name-input" placeholder="이름" autocomplete="off" maxlength="20">
+        <p></p>
+        <input type="text" id="text-input" placeholder="예) 오늘 누군가 커피를 쏟는다" autocomplete="off" maxlength="100">
+        <p class="error" id="submit-error"></p>
+        <button class="btn" type="submit">예언 제출</button>
+      </form>
+      <div class="prophecy-card hidden" id="my-card"></div>
+    </section>
+
+    <section id="game-view" class="card hidden">
+      <h1 id="title" style="font-size:1.2rem"></h1>
+      <div id="stage"></div>
+    </section>
+  </div>
+  <script src="/prophecy.js"></script>
+</body>
+</html>
