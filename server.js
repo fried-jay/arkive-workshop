@@ -17,6 +17,10 @@ const {
   createTmi, submitTmi, startTmi, advanceTmi,
   resetTmi, clearTmi, reviveTmi, tmiSnapshot, tmiParticipantView,
 } = require('./lib/tmi');
+const {
+  createCatchmind, joinCatchmind, assignDrawer, drawerByKey, submitDrawing,
+  submitGuess, revealRound, resetCatchmind, catchmindSnapshot, catchmindParticipantView,
+} = require('./lib/catchmind');
 const { loadState, createSaver } = require('./lib/persist');
 
 const ERROR_STATUS = {
@@ -28,6 +32,11 @@ const ERROR_STATUS = {
   CHOICE_INVALID: 400,
   ROUNDS_INVALID: 400,
   TMI_REQUIRED: 400,
+  WORD_REQUIRED: 400,
+  GUESS_REQUIRED: 400,
+  STROKE_INVALID: 400,
+  OWN_DRAW: 403,
+  DRAW_KEY_INVALID: 404,
   QUIZ_NOT_READY: 409,
   BALANCE_NOT_READY: 409,
   NOT_ENOUGH_ENTRIES: 409,
@@ -38,19 +47,21 @@ const ERROR_STATUS = {
   PARTICIPANT_NOT_FOUND: 404,
 };
 
-function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, saveDelayMs = 500 }) {
+function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, catchmindDataFile, saveDelayMs = 500 }) {
   const dir = path.dirname(dataFile);
   quizDataFile ??= path.join(dir, 'quiz-data.json');
   balanceDataFile ??= path.join(dir, 'balance-data.json');
   tmiDataFile ??= path.join(dir, 'tmi-data.json');
+  catchmindDataFile ??= path.join(dir, 'catchmind-data.json');
 
   const game = loadState(dataFile) ?? createGame();
   const quiz = loadState(quizDataFile) ?? createQuiz();
   const balance = loadState(balanceDataFile) ?? createBalance();
   const tmi = reviveTmi(loadState(tmiDataFile)) ?? createTmi();
+  const catchmind = loadState(catchmindDataFile) ?? createCatchmind();
 
   const app = express();
-  app.use(express.json());
+  app.use(express.json({ limit: '2mb' })); // 캐치마인드 그림 제출용 여유
   app.use(express.static(path.join(__dirname, 'public')));
 
   // SSE 채널: 연결 즉시 + broadcast() 호출마다 전체 스냅샷 push, 상태 저장 포함
@@ -78,6 +89,7 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, sa
   const broadcastQuiz = createSseChannel('/api/quiz/events', quiz, quizDataFile, quizSnapshot);
   const broadcastBalance = createSseChannel('/api/balance/events', balance, balanceDataFile, balanceSnapshot);
   const broadcastTmi = createSseChannel('/api/tmi/events', tmi, tmiDataFile, tmiSnapshot);
+  const broadcastCatchmind = createSseChannel('/api/catchmind/events', catchmind, catchmindDataFile, catchmindSnapshot);
 
   function handle(res, fn) {
     try {
@@ -218,7 +230,56 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, sa
     }));
   }
 
-  return { app, game, quiz, balance, tmi };
+  // ---------- 캐치마인드 ----------
+  app.post('/api/catchmind/join', (req, res) => handle(res, () => {
+    const p = joinCatchmind(catchmind, req.body?.name);
+    broadcastCatchmind();
+    res.json(catchmindParticipantView(catchmind, p.id));
+  }));
+
+  meRoute('/api/catchmind/me/:participantId', catchmind, catchmindParticipantView);
+
+  app.get('/api/catchmind/state', (_req, res) => res.json(catchmindSnapshot(catchmind)));
+
+  app.get('/api/catchmind/strokes', (_req, res) => res.json({ strokes: catchmind.strokes }));
+
+  app.get('/api/catchmind/draw/:key', (req, res) => {
+    const drawer = drawerByKey(catchmind, req.params.key);
+    if (!drawer || catchmind.status !== 'waiting') {
+      return res.status(404).json({ error: 'DRAW_KEY_INVALID' });
+    }
+    res.json({ name: drawer.name });
+  });
+
+  app.post('/api/catchmind/draw/submit', (req, res) => handle(res, () => {
+    const { key, strokes, word } = req.body ?? {};
+    submitDrawing(catchmind, key, strokes, word);
+    broadcastCatchmind();
+    res.json({ ok: true });
+  }));
+
+  app.post('/api/catchmind/guess', (req, res) => handle(res, () => {
+    const { participantId, text } = req.body ?? {};
+    const result = submitGuess(catchmind, participantId, text);
+    broadcastCatchmind();
+    res.json(result);
+  }));
+
+  app.post('/api/catchmind/admin/assign', (req, res) => handle(res, () => {
+    const key = assignDrawer(catchmind, req.body?.participantId);
+    broadcastCatchmind();
+    res.json({ key });
+  }));
+
+  for (const [route, action] of [['reveal', revealRound], ['reset', resetCatchmind]]) {
+    app.post(`/api/catchmind/admin/${route}`, (_req, res) => handle(res, () => {
+      action(catchmind);
+      broadcastCatchmind();
+      res.json({ ok: true });
+    }));
+  }
+
+  return { app, game, quiz, balance, tmi, catchmind };
 }
 
 module.exports = { createServer };
