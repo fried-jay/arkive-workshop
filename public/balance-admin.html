@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>밸런스 관리자</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    textarea { min-height: 200px; resize: vertical; }
+    .actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    .ok { color: #16a34a; font-size: 0.9rem; min-height: 1.2em; margin-top: 8px; }
+    .status-box {
+      margin-top: 16px; padding: 14px; border: 1px solid var(--border);
+      border-radius: 12px; background: var(--accent-soft); font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card">
+      <h1>🛠️ 밸런스 관리자</h1>
+      <p class="muted">한 줄에 라운드 하나, <b>A vs B</b> 형식으로 입력하세요.<br>예) 평생 마라탕 vs 평생 김치찌개</p>
+      <textarea id="rounds-input" placeholder="평생 마라탕 vs 평생 김치찌개&#10;월요일 오전 회의 vs 금요일 야근"></textarea>
+      <p class="muted" id="parse-info"></p>
+      <div class="actions">
+        <button class="btn" id="save-btn">라운드 등록 (진행 초기화)</button>
+      </div>
+      <div class="status-box" id="status-box">상태 불러오는 중...</div>
+      <div class="actions">
+        <button class="btn" id="next-btn">▶ 다음 라운드</button>
+        <button class="btn" id="reveal-btn">✅ 결과 공개</button>
+        <button class="btn secondary" id="reset-btn">게임 리셋</button>
+      </div>
+      <p class="ok" id="ok-msg"></p>
+      <p class="error" id="error-msg"></p>
+    </section>
+  </div>
+  <script src="/balance-admin.js"></script>
+</body>
+</html>

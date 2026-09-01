@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TMI 관리자</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    .ok { color: #16a34a; font-size: 0.9rem; min-height: 1.2em; margin-top: 8px; }
+    .status-box {
+      margin-top: 16px; padding: 14px; border: 1px solid var(--border);
+      border-radius: 12px; background: var(--accent-soft); font-weight: 700;
+    }
+    .names { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .name-chip { background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card">
+      <h1>🛠️ TMI 관리자</h1>
+      <p class="muted">참가자들이 <b>/tmi.html</b> 에서 TMI를 제출하면 아래에 이름이 쌓여요. 4명 이상 모이면 시작할 수 있습니다. 시작하면 TMI마다 "주인은 누구?" 4지선다가 자동 출제돼요.</p>
+      <div class="status-box" id="status-box">상태 불러오는 중...</div>
+      <div class="names" id="names"></div>
+      <div class="actions">
+        <button class="btn" id="start-btn">🚀 게임 시작</button>
+        <button class="btn" id="next-btn">▶ 다음 TMI</button>
+        <button class="btn" id="reveal-btn">✅ 주인 공개</button>
+      </div>
+      <div class="actions">
+        <button class="btn secondary" id="reset-btn">진행 리셋 (제출물 유지)</button>
+        <button class="btn secondary" id="clear-btn">전체 초기화 (제출물 삭제)</button>
+      </div>
+      <p class="ok" id="ok-msg"></p>
+      <p class="error" id="error-msg"></p>
+    </section>
+  </div>
+  <script src="/tmi-admin.js"></script>
+</body>
+</html>
