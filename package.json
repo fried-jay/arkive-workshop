@@ -1,0 +1,14 @@
+{
+  "name": "arkive-workshop",
+  "private": true,
+  "version": "1.0.0",
+  "description": "사내 워크숍 게임 웹 (빙고)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
