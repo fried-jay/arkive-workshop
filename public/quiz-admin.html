@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>퀴즈 관리자</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    textarea { min-height: 260px; resize: vertical; font-size: 0.95rem; }
+    .actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    .ok { color: #16a34a; font-size: 0.9rem; min-height: 1.2em; margin-top: 8px; }
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--accent-soft);
+      font-weight: 700;
+    }
+    details { margin-top: 10px; }
+    pre { background: var(--bg); padding: 10px; border-radius: 8px; font-size: 0.85rem; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card">
+      <h1>🛠️ 퀴즈 관리자</h1>
+      <details>
+        <summary class="muted">문제 입력 형식 보기</summary>
+        <pre>빈 줄로 문제를 구분해요.
+블록의 첫 줄이 문제, 나머지 줄이 보기(2~4개).
+정답 보기 앞에 *를 붙이세요.
+
+우리 회사 창립연도는?
+2019
+*2020
+2021
+2022
+
+대표님 MBTI는?
+*ENFP
+ISTJ</pre>
+      </details>
+      <textarea id="questions-input" placeholder="우리 회사 창립연도는?&#10;2019&#10;*2020&#10;2021&#10;2022&#10;&#10;다음 문제..."></textarea>
+      <p class="muted" id="parse-info"></p>
+      <div class="actions">
+        <button class="btn" id="save-btn">문제 등록 (진행 초기화)</button>
+      </div>
+      <div class="status-box" id="status-box">상태 불러오는 중...</div>
+      <div class="actions">
+        <button class="btn" id="next-btn">▶ 다음 문제</button>
+        <button class="btn" id="reveal-btn">✅ 정답 공개</button>
+        <button class="btn secondary" id="reset-btn">게임 리셋</button>
+      </div>
+      <p class="ok" id="ok-msg"></p>
+      <p class="error" id="error-msg"></p>
+    </section>
+  </div>
+  <script src="/quiz-admin.js"></script>
+</body>
+</html>
