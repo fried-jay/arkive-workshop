@@ -21,6 +21,14 @@ const {
   createCatchmind, joinCatchmind, assignDrawer, drawerByKey, submitDrawing,
   submitGuess, revealRound, resetCatchmind, catchmindSnapshot, catchmindParticipantView,
 } = require('./lib/catchmind');
+const {
+  createMission, setMissions, joinMission, startMission, reportDone, accuse,
+  revealMission, resetMission, missionSnapshot, missionParticipantView,
+} = require('./lib/mission');
+const {
+  createManito, joinManito, setNote, startManito, guessManito,
+  revealManito, resetManito, manitoSnapshot, manitoParticipantView,
+} = require('./lib/manito');
 const { loadState, createSaver } = require('./lib/persist');
 
 const ERROR_STATUS = {
@@ -35,6 +43,12 @@ const ERROR_STATUS = {
   WORD_REQUIRED: 400,
   GUESS_REQUIRED: 400,
   STROKE_INVALID: 400,
+  MISSIONS_INVALID: 400,
+  MISSION_INVALID: 400,
+  SELF_ACCUSE: 400,
+  MISSION_NOT_READY: 409,
+  ALREADY_DONE: 409,
+  MISSION_FOILED: 409,
   OWN_DRAW: 403,
   DRAW_KEY_INVALID: 404,
   QUIZ_NOT_READY: 409,
@@ -53,12 +67,16 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
   balanceDataFile ??= path.join(dir, 'balance-data.json');
   tmiDataFile ??= path.join(dir, 'tmi-data.json');
   catchmindDataFile ??= path.join(dir, 'catchmind-data.json');
+  const missionDataFile = path.join(dir, 'mission-data.json');
+  const manitoDataFile = path.join(dir, 'manito-data.json');
 
   const game = loadState(dataFile) ?? createGame();
   const quiz = loadState(quizDataFile) ?? createQuiz();
   const balance = loadState(balanceDataFile) ?? createBalance();
   const tmi = reviveTmi(loadState(tmiDataFile)) ?? createTmi();
   const catchmind = loadState(catchmindDataFile) ?? createCatchmind();
+  const mission = loadState(missionDataFile) ?? createMission();
+  const manito = loadState(manitoDataFile) ?? createManito();
 
   const app = express();
   app.use(express.json({ limit: '2mb' })); // 캐치마인드 그림 제출용 여유
@@ -90,6 +108,8 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
   const broadcastBalance = createSseChannel('/api/balance/events', balance, balanceDataFile, balanceSnapshot);
   const broadcastTmi = createSseChannel('/api/tmi/events', tmi, tmiDataFile, tmiSnapshot);
   const broadcastCatchmind = createSseChannel('/api/catchmind/events', catchmind, catchmindDataFile, catchmindSnapshot);
+  const broadcastMission = createSseChannel('/api/mission/events', mission, missionDataFile, missionSnapshot);
+  const broadcastManito = createSseChannel('/api/manito/events', manito, manitoDataFile, manitoSnapshot);
 
   function handle(res, fn) {
     try {
@@ -279,7 +299,83 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
     }));
   }
 
-  return { app, game, quiz, balance, tmi, catchmind };
+  // ---------- 비밀미션 ----------
+  app.post('/api/mission/join', (req, res) => handle(res, () => {
+    const p = joinMission(mission, req.body?.name);
+    broadcastMission();
+    res.json(missionParticipantView(mission, p.id));
+  }));
+
+  meRoute('/api/mission/me/:participantId', mission, missionParticipantView);
+
+  app.get('/api/mission/state', (_req, res) => res.json(missionSnapshot(mission)));
+
+  app.post('/api/mission/report', (req, res) => handle(res, () => {
+    const p = reportDone(mission, req.body?.participantId);
+    broadcastMission();
+    res.json(missionParticipantView(mission, p.id));
+  }));
+
+  app.post('/api/mission/accuse', (req, res) => handle(res, () => {
+    const { participantId, targetName, missionIndex } = req.body ?? {};
+    const target = mission.participants.find((p) => p.name === targetName);
+    const result = accuse(mission, participantId, target?.id ?? 'unknown', missionIndex);
+    broadcastMission();
+    res.json(result);
+  }));
+
+  app.post('/api/mission/admin/missions', (req, res) => handle(res, () => {
+    setMissions(mission, req.body?.missions);
+    broadcastMission();
+    res.json({ ok: true });
+  }));
+
+  for (const [route, action] of [
+    ['start', startMission], ['reveal', revealMission], ['reset', resetMission],
+  ]) {
+    app.post(`/api/mission/admin/${route}`, (_req, res) => handle(res, () => {
+      action(mission);
+      broadcastMission();
+      res.json({ ok: true });
+    }));
+  }
+
+  // ---------- 마니또 ----------
+  app.post('/api/manito/join', (req, res) => handle(res, () => {
+    const p = joinManito(manito, req.body?.name);
+    broadcastManito();
+    res.json(manitoParticipantView(manito, p.id));
+  }));
+
+  meRoute('/api/manito/me/:participantId', manito, manitoParticipantView);
+
+  app.get('/api/manito/state', (_req, res) => res.json(manitoSnapshot(manito)));
+
+  app.post('/api/manito/guess', (req, res) => handle(res, () => {
+    const { participantId, guessName } = req.body ?? {};
+    const guessed = manito.participants.find((p) => p.name === guessName);
+    const p = guessManito(manito, participantId, guessed?.id ?? 'unknown');
+    broadcastManito();
+    res.json(manitoParticipantView(manito, p.id));
+  }));
+
+  app.post('/api/manito/admin/note', (req, res) => handle(res, () => {
+    setNote(manito, req.body?.text);
+    broadcastManito();
+    res.json({ ok: true });
+  }));
+
+  for (const [route, action] of [
+    ['start', startManito], ['reveal', revealManito], ['reset', resetManito],
+  ]) {
+    app.post(`/api/manito/admin/${route}`, (_req, res) => handle(res, () => {
+      action(manito);
+      broadcastManito();
+      res.json({ ok: true });
+    }));
+  }
+
+  return { app, game, quiz, balance, tmi, catchmind, mission, manito };
 }
 
 module.exports = { createServer };
