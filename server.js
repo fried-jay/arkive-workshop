@@ -5,6 +5,10 @@ const {
   createGame, setItems, joinGame, markCell, resetGame,
   publicSnapshot, participantView,
 } = require('./lib/game');
+const {
+  createQuiz, setQuestions, joinQuiz, openNext, answerQuestion,
+  reveal, resetQuiz, quizSnapshot, quizParticipantView,
+} = require('./lib/quiz');
 const { loadState, createSaver } = require('./lib/persist');
 
 const ERROR_STATUS = {
@@ -12,18 +16,33 @@ const ERROR_STATUS = {
   ITEMS_NOT_SET: 400,
   ITEMS_INVALID: 400,
   CELL_INVALID: 400,
+  QUESTIONS_INVALID: 400,
+  CHOICE_INVALID: 400,
+  QUIZ_NOT_READY: 409,
+  WRONG_STATE: 409,
+  ALREADY_ANSWERED: 409,
   PARTICIPANT_NOT_FOUND: 404,
 };
 
-function createServer({ dataFile, saveDelayMs = 500 }) {
+function createServer({ dataFile, quizDataFile, saveDelayMs = 500 }) {
+  quizDataFile ??= path.join(path.dirname(dataFile), 'quiz-data.json');
   const game = loadState(dataFile) ?? createGame();
+  const quiz = loadState(quizDataFile) ?? createQuiz();
   const save = createSaver(dataFile, saveDelayMs);
+  const saveQuiz = createSaver(quizDataFile, saveDelayMs);
   const sseClients = new Set();
+  const quizSseClients = new Set();
 
   function broadcast() {
     save(game);
     const payload = `data: ${JSON.stringify(publicSnapshot(game))}\n\n`;
     for (const res of sseClients) res.write(payload);
+  }
+
+  function broadcastQuiz() {
+    saveQuiz(quiz);
+    const payload = `data: ${JSON.stringify(quizSnapshot(quiz))}\n\n`;
+    for (const res of quizSseClients) res.write(payload);
   }
 
   const app = express();
@@ -84,7 +103,63 @@ function createServer({ dataFile, saveDelayMs = 500 }) {
     res.json({ ok: true });
   }));
 
-  return { app, game };
+  app.post('/api/quiz/join', (req, res) => handle(res, () => {
+    const p = joinQuiz(quiz, req.body?.name);
+    broadcastQuiz();
+    res.json(quizParticipantView(quiz, p.id));
+  }));
+
+  app.get('/api/quiz/me/:participantId', (req, res) => {
+    const view = quizParticipantView(quiz, req.params.participantId);
+    if (!view) return res.status(404).json({ error: 'PARTICIPANT_NOT_FOUND' });
+    res.json(view);
+  });
+
+  app.post('/api/quiz/answer', (req, res) => handle(res, () => {
+    const { participantId, choiceIndex } = req.body ?? {};
+    const p = answerQuestion(quiz, participantId, choiceIndex);
+    broadcastQuiz();
+    res.json(quizParticipantView(quiz, p.id));
+  }));
+
+  app.get('/api/quiz/state', (_req, res) => res.json(quizSnapshot(quiz)));
+
+  app.get('/api/quiz/events', (req, res) => {
+    res.writeHead(200, {
+      'content-type': 'text/event-stream',
+      'cache-control': 'no-cache',
+      connection: 'keep-alive',
+    });
+    res.write(`data: ${JSON.stringify(quizSnapshot(quiz))}\n\n`);
+    quizSseClients.add(res);
+    req.on('close', () => quizSseClients.delete(res));
+  });
+
+  app.post('/api/quiz/admin/questions', (req, res) => handle(res, () => {
+    setQuestions(quiz, req.body?.questions);
+    broadcastQuiz();
+    res.json({ ok: true });
+  }));
+
+  app.post('/api/quiz/admin/next', (_req, res) => handle(res, () => {
+    openNext(quiz);
+    broadcastQuiz();
+    res.json({ ok: true });
+  }));
+
+  app.post('/api/quiz/admin/reveal', (_req, res) => handle(res, () => {
+    reveal(quiz);
+    broadcastQuiz();
+    res.json({ ok: true });
+  }));
+
+  app.post('/api/quiz/admin/reset', (_req, res) => handle(res, () => {
+    resetQuiz(quiz);
+    broadcastQuiz();
+    res.json({ ok: true });
+  }));
+
+  return { app, game, quiz };
 }
 
 module.exports = { createServer };
