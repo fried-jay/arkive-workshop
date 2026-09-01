@@ -18,6 +18,8 @@ test('정적 페이지 서빙', async (t) => {
     '/tmi.html', '/tmi-board.html', '/tmi-admin.html',
     '/manual.html', '/host.html',
     '/catchmind.html', '/catchmind-draw.html', '/catchmind-board.html', '/catchmind-admin.html',
+    '/mission.html', '/mission-board.html', '/mission-admin.html',
+    '/manito.html', '/manito-board.html', '/manito-admin.html',
   ]) {
     const res = await fetch(base + p);
     assert.equal(res.status, 200, `${p} should be 200`);

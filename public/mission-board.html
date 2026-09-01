@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>비밀미션 현황판</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .wrap { max-width: 960px; }
+    .waiting { text-align: center; padding: 60px 0; font-size: 1.3rem; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 16px; }
+    @media (max-width: 640px) { .cols { grid-template-columns: 1fr; } }
+    h2 { font-size: 1.1rem; margin: 0 0 10px; }
+    .pool { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+    .pool li { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 0.95rem; }
+    .people { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+    .people li {
+      display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center;
+      background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+      padding: 10px 14px; font-weight: 700;
+    }
+    .people li.done { border-color: #16a34a; background: #f0fdf4; }
+    .people li.foiled { border-color: #dc2626; background: #fef2f2; }
+    .pt { color: var(--accent); font-variant-numeric: tabular-nums; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; background: var(--card); border-radius: 12px; overflow: hidden; }
+    th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+    th { color: var(--muted); font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🥷 비밀미션 현황판</h1>
+    <p class="muted" id="progress"></p>
+    <div id="stage"></div>
+  </div>
+  <script src="/mission-board.js"></script>
+</body>
+</html>

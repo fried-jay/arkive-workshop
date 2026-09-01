@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>비밀미션</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .mission-card {
+      background: var(--accent-soft);
+      border: 2px dashed var(--accent);
+      border-radius: 14px;
+      padding: 18px;
+      margin-top: 14px;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .mission-card .label { display: block; font-size: 0.78rem; color: var(--accent); letter-spacing: 0.08em; margin-bottom: 4px; }
+    .mission-card.done { border-color: #16a34a; background: #f0fdf4; }
+    .mission-card.foiled { border-color: #dc2626; background: #fef2f2; text-decoration: line-through; }
+    .waiting { text-align: center; padding: 24px 0; }
+    .score { font-weight: 800; color: var(--accent); }
+    select {
+      width: 100%; border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px; font-size: 1rem; font-family: inherit; background: var(--card); color: var(--text);
+    }
+    .accuse-box { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .accuse-box .row { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+    .pool { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+    .pool li { background: var(--bg); border-radius: 8px; padding: 8px 12px; font-size: 0.88rem; }
+    .ok { color: #16a34a; font-size: 0.9rem; min-height: 1.2em; margin-top: 8px; }
+    details { margin-top: 16px; }
+    summary { font-weight: 700; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section id="join-view" class="card">
+      <h1>🥷 비밀미션</h1>
+      <p class="muted">이름을 입력하고 입장하세요. 워크숍 동안 몰래 수행할 비밀미션을 받게 됩니다.</p>
+      <form id="join-form">
+        <input type="text" id="name-input" placeholder="이름" autocomplete="off" maxlength="20">
+        <p class="error" id="join-error"></p>
+        <button class="btn" type="submit">입장하기</button>
+      </form>
+    </section>
+
+    <section id="game-view" class="card hidden">
+      <div class="statusbar" style="margin-top:0">
+        <span id="greeting"></span>
+        <span class="score" id="my-score"></span>
+      </div>
+      <div id="stage"></div>
+      <p class="ok" id="ok-msg"></p>
+      <p class="error" id="game-error"></p>
+    </section>
+  </div>
+  <script src="/mission.js"></script>
+</body>
+</html>

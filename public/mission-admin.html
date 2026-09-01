@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>비밀미션 관리자</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    textarea { min-height: 260px; resize: vertical; font-size: 0.95rem; }
+    .actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    .ok { color: #16a34a; font-size: 0.9rem; min-height: 1.2em; margin-top: 8px; }
+    .status-box {
+      margin-top: 16px; padding: 14px; border: 1px solid var(--border);
+      border-radius: 12px; background: var(--accent-soft); font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card">
+      <h1>🛠️ 비밀미션 관리자</h1>
+      <p class="muted">미션을 한 줄에 하나씩 입력하세요. 미션 풀은 전원에게 공개되고, <b>누가 어떤 미션인지만 비밀</b>입니다. 참가자 수보다 미션이 많으면 중복 없이 배정돼요. 워크숍 시작할 때 시작하고, 끝날 때 공개하는 걸 추천!</p>
+      <div class="actions" style="margin-bottom:8px">
+        <button class="btn secondary" id="preset-btn">✨ 기본 미션 20개 채우기</button>
+      </div>
+      <textarea id="missions-input" placeholder="누군가가 '진짜?'라고 말하게 만들기&#10;세 명 이상과 하이파이브 하기&#10;..."></textarea>
+      <p class="muted" id="parse-info"></p>
+      <div class="actions">
+        <button class="btn" id="save-btn">미션 등록</button>
+      </div>
+      <div class="status-box" id="status-box">상태 불러오는 중...</div>
+      <div class="actions">
+        <button class="btn" id="start-btn">🚀 게임 시작 (미션 배정)</button>
+        <button class="btn" id="reveal-btn">🎊 전체 공개 (게임 종료)</button>
+        <button class="btn secondary" id="reset-btn">리셋</button>
+      </div>
+      <p class="ok" id="ok-msg"></p>
+      <p class="error" id="error-msg"></p>
+    </section>
+  </div>
+  <script src="/mission-admin.js"></script>
+</body>
+</html>
