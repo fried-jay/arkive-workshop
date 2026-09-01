@@ -1,10 +1,7 @@
 'use strict';
 
 const stage = document.getElementById('stage');
-const ranking = document.getElementById('ranking');
-const rankingTitle = document.getElementById('ranking-title');
 const progress = document.getElementById('progress');
-const answered = document.getElementById('answered');
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -15,51 +12,38 @@ function el(tag, className, text) {
 
 function render(snap) {
   stage.replaceChildren();
-  answered.textContent = '';
-  progress.textContent = `참가 ${snap.participantCount}명 · TMI 제출 ${snap.submittedCount}명`;
 
   if (snap.status === 'collecting') {
-    stage.appendChild(el('p', 'muted waiting', 'TMI 수집 중! 폰으로 접속해서 나만 아는 TMI를 제출해주세요. (제출 없이 참가만도 가능)'));
+    progress.textContent = `제출 ${snap.participantCount}명`;
+    stage.appendChild(el('p', 'muted waiting', 'TMI 수집 중! 폰으로 접속해서 나만 아는 TMI 3개를 제출해주세요.'));
     const names = el('div', 'names');
-    for (const m of snap.members) names.appendChild(el('span', 'name-chip', m.submitted ? `✓ ${m.name}` : m.name));
+    for (const name of snap.members) names.appendChild(el('span', 'name-chip', name));
     stage.appendChild(names);
-  } else if (snap.status === 'finished') {
-    stage.appendChild(el('p', 'waiting', '🎊 게임 종료! 최종 순위입니다.'));
-  } else {
-    progress.textContent = `TMI ${snap.currentIndex + 1} / ${snap.totalRounds} · 참가자 ${snap.participantCount}명`;
-    answered.textContent = `응답 ${snap.answeredCount} / ${snap.participantCount - 1}`;
-    stage.appendChild(el('p', 'tmi-text', `"${snap.round.tmi}"`));
-    const choices = el('div', 'choices');
-    snap.round.choices.forEach((name, i) => {
-      const div = el('div', 'choice');
-      div.appendChild(el('span', null, `${i + 1}. ${name}`));
-      if (snap.status === 'revealed') {
-        if (i === snap.round.answerIndex) div.classList.add('correct');
-        div.appendChild(el('span', 'cnt', `${snap.round.counts[i]}명`));
-      }
-      choices.appendChild(div);
-    });
-    stage.appendChild(choices);
-    if (snap.status === 'revealed') {
-      stage.appendChild(el('p', 'owner-reveal', `주인공은... ${snap.round.ownerName}! 🎉`));
-    }
+    return;
+  }
+  if (snap.status === 'finished') {
+    progress.textContent = '';
+    stage.appendChild(el('p', 'waiting', '🎊 모든 TMI의 주인이 공개됐습니다. 끝!'));
+    return;
   }
 
-  const showRanking = snap.status === 'revealed' || snap.status === 'finished';
-  rankingTitle.classList.toggle('hidden', !showRanking || snap.participants.length === 0);
-  if (showRanking) {
-    const sorted = [...snap.participants].sort(
-      (a, b) => b.score - a.score || a.name.localeCompare(b.name, 'ko'),
-    );
-    ranking.replaceChildren(...sorted.map((p, i) => {
-      const li = el('li', 'rank-row' + (i < 3 && p.score > 0 ? ' top' : ''));
-      li.appendChild(el('span', 'rank-no', `${i + 1}`));
-      li.appendChild(el('span', null, p.name));
-      li.appendChild(el('span', 'rank-score', `${p.score}점`));
-      return li;
-    }));
+  progress.textContent = `${snap.roundIndex + 1}번째 사람 / ${snap.totalRounds}명`;
+  const hints = el('div', 'hints');
+  snap.round.tmis.forEach((t, i) => {
+    const h = el('div', 'hint');
+    h.appendChild(el('span', 'no', `힌트 ${i + 1} / ${snap.round.totalTmis}`));
+    h.appendChild(el('span', null, `"${t}"`));
+    hints.appendChild(h);
+  });
+  stage.appendChild(hints);
+
+  if (snap.round.ownerName) {
+    stage.appendChild(el('p', 'owner-reveal', `주인공은... ${snap.round.ownerName}! 🎉`));
   } else {
-    ranking.replaceChildren();
+    stage.appendChild(el('p', 'prompt', '누구일까요? 🤔'));
+    const names = el('div', 'names');
+    for (const name of snap.members) names.appendChild(el('span', 'name-chip', name));
+    stage.appendChild(names);
   }
 }
 

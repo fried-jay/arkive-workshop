@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>진행자 콘솔</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .wrap { max-width: 720px; }
+    .game-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      align-items: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--row-color, var(--accent));
+      border-radius: 12px;
+      padding: 16px 18px;
+      margin: 10px 0;
+    }
+    .game-row .name { font-weight: 700; font-size: 1.05rem; }
+    .game-row .desc { color: var(--muted); font-size: 0.85rem; }
+    .game-row.g-quiz { --row-color: #d97706; }
+    .game-row.g-tmi { --row-color: #db2777; }
+    .game-row.g-bal { --row-color: #0d9488; }
+    .btn.small { padding: 9px 14px; font-size: 0.9rem; white-space: nowrap; }
+    .top-links { display: flex; gap: 10px; margin: 16px 0 24px; flex-wrap: wrap; }
+    @media (max-width: 520px) {
+      .game-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🎛️ 진행자 콘솔</h1>
+    <p class="muted">여기서 각 게임의 관리자·현황판을 바로 열 수 있어요. 현황판은 빔프로젝터에 띄우는 화면입니다.</p>
+    <div class="top-links">
+      <a class="btn secondary" href="/manual.html">📖 진행 매뉴얼</a>
+      <a class="btn secondary" href="/">🏕️ 참가자 허브</a>
+    </div>
+
+    <div class="game-row">
+      <div><div class="name">🎯 빙고</div><div class="desc">항목 25개 등록 → 각자 자유롭게 칠하기</div></div>
+      <a class="btn small" href="/admin.html">관리자</a>
+      <a class="btn small secondary" href="/board.html">현황판</a>
+    </div>
+    <div class="game-row g-quiz">
+      <div><div class="name">⚡ 퀴즈</div><div class="desc">문제 등록 → 다음 문제 / 정답 공개</div></div>
+      <a class="btn small" href="/quiz-admin.html">관리자</a>
+      <a class="btn small secondary" href="/quiz-board.html">현황판</a>
+    </div>
+    <div class="game-row g-tmi">
+      <div><div class="name">🤫 TMI 주인 찾기</div><div class="desc">TMI 3개 수집 → 힌트 하나씩 공개 → 주인 발표</div></div>
+      <a class="btn small" href="/tmi-admin.html">관리자</a>
+      <a class="btn small secondary" href="/tmi-board.html">현황판</a>
+    </div>
+    <div class="game-row g-bal">
+      <div><div class="name">⚖️ 밸런스 게임</div><div class="desc">A vs B 등록 → 투표 → 결과 공개</div></div>
+      <a class="btn small" href="/balance-admin.html">관리자</a>
+      <a class="btn small secondary" href="/balance-board.html">현황판</a>
+    </div>
+  </div>
+</body>
+</html>

@@ -6,50 +6,44 @@
   <title>TMI 주인 찾기</title>
   <link rel="stylesheet" href="/style.css">
   <style>
-    .choices { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
-    .choice {
-      border: 1px solid var(--border); border-radius: 12px; background: var(--card);
-      padding: 14px; font-size: 1rem; font-family: inherit; color: var(--text);
-      text-align: left; cursor: pointer;
+    .tmi-inputs { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
+    .hint {
+      background: var(--accent-soft);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 1.05rem;
+      font-weight: 700;
     }
-    .choice.mine { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
-    .choice.correct { background: #16a34a; border-color: #16a34a; color: #fff; font-weight: 700; }
-    .choice.wrong-mine { background: #dc2626; border-color: #dc2626; color: #fff; font-weight: 700; }
-    .choice:disabled { cursor: default; opacity: 0.9; }
-    .tmi-text {
-      font-size: 1.1rem; font-weight: 700; margin: 12px 0 0;
-      background: var(--accent-soft); border-radius: 12px; padding: 16px;
-    }
+    .hint .no { color: var(--accent); font-size: 0.8rem; display: block; font-weight: 700; margin-bottom: 2px; }
+    .hints { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
     .waiting { text-align: center; padding: 30px 0; }
-    .score { font-weight: 800; color: var(--accent); }
-    .result-msg { font-size: 1.05rem; font-weight: 700; margin-top: 14px; }
+    .owner-reveal { text-align: center; font-size: 1.2rem; font-weight: 800; margin-top: 16px; color: #16a34a; }
     .my-tmi { background: var(--bg); border-radius: 10px; padding: 10px 12px; margin-top: 12px; font-size: 0.9rem; }
+    .my-tmi ol { margin: 6px 0 0; padding-left: 20px; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <section id="submit-view" class="card">
       <h1>🤫 TMI 주인 찾기</h1>
-      <p class="muted">이름과 나만 아는 TMI를 하나 적어주세요. 워크숍에서 "이 TMI 주인은 누구?" 퀴즈로 나옵니다. (제출 후 다시 제출하면 수정돼요)</p>
+      <p class="muted">이름과 나만 아는 TMI를 <b>3개</b> 적어주세요. 워크숍에서 하나씩 힌트처럼 공개되고, 다 같이 주인을 추리합니다. (다시 제출하면 수정돼요)</p>
       <form id="submit-form">
         <input type="text" id="name-input" placeholder="이름" autocomplete="off" maxlength="20">
-        <p id="tmi-row"></p>
-        <input type="text" id="tmi-input" placeholder="예) 사실 나 스카이다이빙 자격증 있음" autocomplete="off" maxlength="100">
+        <div class="tmi-inputs">
+          <input type="text" id="tmi-1" placeholder="TMI 1 — 예) 사실 나 스카이다이빙 자격증 있음" autocomplete="off" maxlength="100">
+          <input type="text" id="tmi-2" placeholder="TMI 2" autocomplete="off" maxlength="100">
+          <input type="text" id="tmi-3" placeholder="TMI 3" autocomplete="off" maxlength="100">
+        </div>
         <p class="error" id="submit-error"></p>
-        <button class="btn" type="submit" id="submit-btn">제출하기</button>
-        <button class="btn secondary" type="button" id="join-only-btn">TMI 없이 참가만</button>
+        <button class="btn" type="submit">제출하기</button>
       </form>
-      <p class="muted" id="join-hint" style="margin-top:10px">TMI를 제출하면 내 문제도 출제돼요. 참가만 하면 맞히기에만 참여합니다.</p>
       <div class="my-tmi hidden" id="my-tmi"></div>
     </section>
 
     <section id="game-view" class="card hidden">
-      <div class="statusbar" style="margin-top:0">
-        <span id="greeting"></span>
-        <span class="score" id="my-score"></span>
-      </div>
+      <h1 id="round-title"></h1>
+      <p class="muted" id="round-sub"></p>
       <div id="stage"></div>
-      <p class="error" id="game-error"></p>
     </section>
   </div>
   <script src="/tmi.js"></script>

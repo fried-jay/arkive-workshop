@@ -14,7 +14,7 @@ const {
   revealBalance, resetBalance, balanceSnapshot, balanceParticipantView,
 } = require('./lib/balance');
 const {
-  createTmi, submitTmi, joinTmi, startTmi, answerTmi, revealTmi, nextTmi,
+  createTmi, submitTmi, startTmi, advanceTmi,
   resetTmi, clearTmi, reviveTmi, tmiSnapshot, tmiParticipantView,
 } = require('./lib/tmi');
 const { loadState, createSaver } = require('./lib/persist');
@@ -196,32 +196,19 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, sa
   }
 
   // ---------- TMI ----------
-  app.post('/api/tmi/join', (req, res) => handle(res, () => {
-    const p = joinTmi(tmi, req.body?.name);
-    broadcastTmi();
-    res.json(tmiParticipantView(tmi, p.id));
-  }));
-
   app.post('/api/tmi/submit', (req, res) => handle(res, () => {
-    const { name, tmi: text } = req.body ?? {};
-    const p = submitTmi(tmi, name, text);
+    const { name, tmis } = req.body ?? {};
+    const p = submitTmi(tmi, name, tmis);
     broadcastTmi();
     res.json(tmiParticipantView(tmi, p.id));
   }));
 
   meRoute('/api/tmi/me/:participantId', tmi, tmiParticipantView);
 
-  app.post('/api/tmi/answer', (req, res) => handle(res, () => {
-    const { participantId, choiceIndex } = req.body ?? {};
-    const p = answerTmi(tmi, participantId, choiceIndex);
-    broadcastTmi();
-    res.json(tmiParticipantView(tmi, p.id));
-  }));
-
   app.get('/api/tmi/state', (_req, res) => res.json(tmiSnapshot(tmi)));
 
   for (const [route, action] of [
-    ['start', startTmi], ['next', nextTmi], ['reveal', revealTmi],
+    ['start', startTmi], ['next', advanceTmi],
     ['reset', resetTmi], ['clear', clearTmi],
   ]) {
     app.post(`/api/tmi/admin/${route}`, (_req, res) => handle(res, () => {

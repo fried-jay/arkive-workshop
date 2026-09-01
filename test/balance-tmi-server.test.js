@@ -71,55 +71,55 @@ test('밸런스 흐름: rounds → join → vote → reveal 점수/분포', asyn
   assert.equal(snap.totalRounds, 1);
 });
 
-test('TMI 흐름: submit/join → start → answer(본인 불가) → reveal → reset/clear', async (t) => {
+test('TMI 흐름: submit(3개) → start → 힌트 순차 공개 → 주인 공개 → reset/clear', async (t) => {
   const { server, base } = startServer();
   t.after(() => stop(server));
 
-  let res = await post(base, '/api/tmi/submit', { name: '가', tmi: ' ' });
+  let res = await post(base, '/api/tmi/submit', { name: '가', tmis: ['하나', '둘'] });
   assert.equal(res.status, 400);
+  assert.equal(res.body.error, 'TMI_REQUIRED');
 
-  const ids = {};
-  for (const name of ['가', '나', '다']) {
-    ids[name] = (await post(base, '/api/tmi/submit', { name, tmi: `${name}의 비밀` })).body.participantId;
+  for (const name of ['가', '나']) {
+    res = await post(base, '/api/tmi/submit', { name, tmis: [`${name}1`, `${name}2`, `${name}3`] });
+    assert.equal(res.status, 200);
+    assert.deepEqual(res.body.tmis, [`${name}1`, `${name}2`, `${name}3`]);
   }
-  // '라'는 TMI 없이 추리 전용 참가
-  res = await post(base, '/api/tmi/join', { name: '라' });
-  assert.equal(res.status, 200);
-  assert.equal(res.body.submitted, false);
-  ids['라'] = res.body.participantId;
 
-  // 시작 전 스냅샷에 TMI 내용 미노출, 제출/참가 구분 표시
+  // 수집 중 스냅샷: 이름만, 내용 미노출
   let snap = await state(base, '/api/tmi/state');
-  assert.equal(snap.participantCount, 4);
-  assert.equal(snap.submittedCount, 3);
-  assert.equal(snap.members.find((m) => m.name === '라').submitted, false);
-  assert.equal(JSON.stringify(snap).includes('비밀'), false);
+  assert.equal(snap.participantCount, 2);
+  assert.deepEqual(snap.members.sort(), ['가', '나']);
+  assert.equal(/가1|나1/.test(JSON.stringify(snap)), false);
 
   res = await post(base, '/api/tmi/admin/start');
   assert.equal(res.status, 200);
   snap = await state(base, '/api/tmi/state');
-  assert.equal(snap.status, 'question');
-  assert.equal('answerIndex' in snap.round, false);
+  assert.equal(snap.status, 'playing');
+  assert.equal(snap.round.tmis.length, 1);
+  assert.equal(snap.round.ownerName, null);
 
-  // 주인은 답변 불가, 다른 사람은 정답 시도
-  const ownerName = snap.round.tmi.replace('의 비밀', '');
-  const guesserName = ['가', '나', '다', '라'].find((n) => n !== ownerName);
-  res = await post(base, '/api/tmi/answer', { participantId: ids[ownerName], choiceIndex: 0 });
-  assert.equal(res.status, 403);
-  assert.equal(res.body.error, 'OWN_QUESTION');
-  const correctIndex = snap.round.choices.indexOf(ownerName);
-  await post(base, '/api/tmi/answer', { participantId: ids[guesserName], choiceIndex: correctIndex });
-
-  await post(base, '/api/tmi/admin/reveal');
+  // 힌트 2, 3 → 주인 공개
+  await post(base, '/api/tmi/admin/next');
+  await post(base, '/api/tmi/admin/next');
   snap = await state(base, '/api/tmi/state');
-  assert.equal(snap.round.ownerName, ownerName);
-  assert.equal(snap.participants.find((p) => p.name === guesserName).score, 130);
+  assert.equal(snap.round.tmis.length, 3);
+  assert.equal(snap.round.ownerName, null);
+  await post(base, '/api/tmi/admin/next');
+  snap = await state(base, '/api/tmi/state');
+  const owner = snap.round.ownerName;
+  assert.ok(['가', '나'].includes(owner));
+  assert.equal(snap.round.tmis[0], `${owner}1`);
+
+  // 다음 사람 → 끝까지
+  for (let i = 0; i < 5; i++) await post(base, '/api/tmi/admin/next');
+  snap = await state(base, '/api/tmi/state');
+  assert.equal(snap.status, 'finished');
 
   // 진행 리셋: 제출 유지 / 전체 초기화: 삭제
   await post(base, '/api/tmi/admin/reset');
   snap = await state(base, '/api/tmi/state');
   assert.equal(snap.status, 'collecting');
-  assert.equal(snap.participantCount, 4);
+  assert.equal(snap.participantCount, 2);
   await post(base, '/api/tmi/admin/clear');
   snap = await state(base, '/api/tmi/state');
   assert.equal(snap.participantCount, 0);

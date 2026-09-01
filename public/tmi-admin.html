@@ -14,19 +14,19 @@
     }
     .names { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
     .name-chip { background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px; font-weight: 700; font-size: 0.9rem; }
+    #next-btn { font-size: 1.1rem; padding: 14px 28px; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <section class="card">
       <h1>🛠️ TMI 관리자</h1>
-      <p class="muted">참가자들이 <b>/tmi.html</b> 에서 TMI를 제출하거나 이름만으로 참가하면 아래에 쌓여요 (✓ = 제출). <b>참가자 4명 이상 + 제출 1건 이상</b>이면 시작할 수 있습니다. 시작하면 TMI마다 "주인은 누구?" 4지선다가 자동 출제되고, 보기는 전체 참가자 중에서 나와요.</p>
+      <p class="muted">참가자들이 <b>/tmi.html</b> 에서 TMI 3개를 제출하면 아래에 이름이 쌓여요. <b>2명 이상</b>이면 시작할 수 있습니다. 진행은 <b>▶ 다음</b> 버튼 하나로: 힌트 1 → 2 → 3 → 주인 공개 → 다음 사람 순서로 넘어가요.</p>
       <div class="status-box" id="status-box">상태 불러오는 중...</div>
       <div class="names" id="names"></div>
       <div class="actions">
         <button class="btn" id="start-btn">🚀 게임 시작</button>
-        <button class="btn" id="next-btn">▶ 다음 TMI</button>
-        <button class="btn" id="reveal-btn">✅ 주인 공개</button>
+        <button class="btn" id="next-btn">▶ 다음</button>
       </div>
       <div class="actions">
         <button class="btn secondary" id="reset-btn">진행 리셋 (제출물 유지)</button>
