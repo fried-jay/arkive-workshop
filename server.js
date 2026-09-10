@@ -18,7 +18,7 @@ const {
   resetTmi, clearTmi, reviveTmi, tmiSnapshot, tmiParticipantView,
 } = require('./lib/tmi');
 const {
-  createCatchmind, setPromptBank, promptForName, submitCatchmind, startShow, nextShow, revealCurrent, pickWinner,
+  createCatchmind, setPromptBank, assignPrompts, promptForName, submitCatchmind, startShow, nextShow, revealCurrent, pickWinner,
   resetCatchmind, clearCatchmind, currentStrokes, catchmindSnapshot,
 } = require('./lib/catchmind');
 const {
@@ -322,6 +322,12 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
     setPromptBank(catchmind, req.body?.prompts);
     broadcastCatchmind();
     res.json({ ok: true, count: catchmind.promptBank.length });
+  }));
+
+  app.post('/api/catchmind/admin/assign', (req, res) => handle(res, () => {
+    const n = assignPrompts(catchmind, req.body?.names);
+    broadcastCatchmind();
+    res.json({ ok: true, assigned: n });
   }));
 
   app.get('/api/catchmind/strokes', (_req, res) => res.json({ strokes: currentStrokes(catchmind) }));
