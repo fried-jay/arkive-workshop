@@ -71,17 +71,23 @@ const forceStartBtn = document.getElementById('force-start-btn');
 const roster = document.getElementById('roster');
 const startOk = document.getElementById('start-ok');
 const startError = document.getElementById('start-error');
-const timerInput = document.getElementById('timer-input');
+const callSecInput = document.getElementById('callsec-input');
+const callBoard = document.getElementById('call-board');
+const callHead = document.getElementById('callboard-head');
+let ITEMS = [];
+let liveNow = 0, liveOffset = 0;
+fetch('/api/admin/items').then((r) => r.json()).then((d) => { ITEMS = d.items || []; }).catch(() => {});
 
 function renderLive(snap) {
   const total = snap.participants.length;
   const ready = snap.readyCount;
   const allReady = total > 0 && ready === total;
 
-  if (timerInput && document.activeElement !== timerInput && snap.timerSec != null) timerInput.value = snap.timerSec;
+  if (callSecInput && document.activeElement !== callSecInput && snap.callSec) callSecInput.value = snap.callSec;
+  liveOffset = snap.now ? snap.now - Date.now() : 0;
   if (snap.started) {
-    const limit = snap.timerSec > 0 ? ` · 제한 ${snap.timerSec}초` : '';
-    liveStatus.textContent = `▶ 진행 중 · 참가자 ${total}명${limit}`;
+    liveStatus.textContent = `▶ 진행 중 · 참가자 ${total}명 · 호출 ${snap.calledCount}/25` + (snap.currentCall ? ` · 지금 "${snap.currentCall.text}"` : '');
+    renderCallBoard(snap);
   } else if (total === 0) {
     liveStatus.textContent = '참가자를 기다리는 중이에요. (0명)';
   } else {
@@ -114,6 +120,33 @@ function renderLive(snap) {
   }));
 }
 
+let lastSnap = null;
+function renderCallBoard(snap) {
+  lastSnap = snap;
+  if (!snap.started) { callBoard.replaceChildren(); callHead.style.display = 'none'; return; }
+  callHead.style.display = '';
+  const sec = snap.callSec || 15;
+  const nowS = Date.now() + liveOffset;
+  callBoard.replaceChildren(...ITEMS.map((text, i) => {
+    const at = snap.calls ? snap.calls[i] : null;
+    const active = at != null && nowS <= at + sec * 1000;
+    const done = at != null && !active;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'call-cell' + (active ? ' active' : '') + (done ? ' done' : '');
+    b.disabled = at != null;
+    b.textContent = active ? `⏱${Math.max(0, Math.ceil((at + sec * 1000 - nowS) / 1000))} ${text}` : text;
+    if (at == null) b.addEventListener('click', () => call(i));
+    return b;
+  }));
+}
+async function call(i) {
+  try { await post('/api/admin/call', { itemIndex: i }); }
+  catch (err) { startError.textContent = err.message === 'ALREADY_CALLED' ? '이미 부른 항목이에요.' : '호출 실패.'; }
+}
+// 카운트다운 갱신 (호출 중일 때 초 표시)
+setInterval(() => { if (lastSnap && lastSnap.started) renderCallBoard(lastSnap); }, 500);
+
 async function doStart() {
   startError.textContent = '';
   startOk.textContent = '';
@@ -126,13 +159,13 @@ async function doStart() {
       : '시작에 실패했어요.';
   }
 }
-document.getElementById('timer-btn').addEventListener('click', async () => {
+document.getElementById('callsec-btn').addEventListener('click', async () => {
   try {
-    await post('/api/admin/timer', { seconds: Number(timerInput.value) });
-    startOk.textContent = Number(timerInput.value) > 0 ? `제한시간 ${Number(timerInput.value)}초 설정 완료.` : '제한시간 없음으로 설정.';
+    await post('/api/admin/call-window', { seconds: Number(callSecInput.value) });
+    startOk.textContent = `호출 제한시간 ${Number(callSecInput.value)}초 설정 완료.`;
     startError.textContent = '';
   } catch {
-    startError.textContent = '0~3600초 사이로 입력해주세요.';
+    startError.textContent = '3~120초 사이로 입력해주세요.';
   }
 });
 startBtn.addEventListener('click', doStart);

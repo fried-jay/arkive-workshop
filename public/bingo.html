@@ -14,6 +14,13 @@
       background: var(--accent-soft); font-weight: 700; color: var(--accent);
     }
     .phase .sub { color: var(--muted); font-weight: 600; font-size: 0.85rem; }
+    .call-banner { padding:14px; border-radius:12px; background:#f1f3f8; color:var(--muted); font-weight:800; text-align:center; font-size:1.05rem; }
+    .call-banner.on { background:var(--accent); color:#fff; }
+    .cell.active { border-color:var(--gold); box-shadow:0 0 0 3px #fde68a; animation:pulse 1s infinite; }
+    .cell.wait { opacity:0.4; }
+    .cell.locked { opacity:0.55; cursor:default; }
+    .cell.locked.marked, .cell.active.marked { opacity:1; }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 3px #fde68a;} 50%{box-shadow:0 0 0 6px #fcd34d;} }
   </style>
 </head>
 <body>
@@ -45,7 +52,8 @@
 
       <!-- 시작 후: 마킹 -->
       <div id="play-view" class="hidden">
-        <div class="q-head"><p class="muted" style="margin:0">해당하는 칸을 눌러서 칠하세요.</p><span class="countdown" id="bingo-countdown"></span></div>
+        <div class="call-banner" id="call-banner">진행자가 항목을 부르길 기다려요…</div>
+        <p class="muted" style="margin:8px 0 0">📢 불린 항목(반짝임)만 15초 안에 칠할 수 있어요.</p>
         <div class="grid" id="play-grid"></div>
         <div class="statusbar">
           <span id="marked-count"></span>

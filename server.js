@@ -2,7 +2,7 @@
 const path = require('node:path');
 const express = require('express');
 const {
-  createGame, setItems, joinGame, reshuffle, setReady, startGame, setBingoTimer, markCell, resetGame, clearBingoParticipants,
+  createGame, setItems, joinGame, reshuffle, setReady, startGame, setCallWindow, callItem, markCell, resetGame, clearBingoParticipants,
   publicSnapshot, participantView,
 } = require('./lib/game');
 const {
@@ -41,6 +41,8 @@ const ERROR_STATUS = {
   ITEMS_INVALID: 400,
   CELL_INVALID: 400,
   NOT_STARTED: 409,
+  NOT_CALLED: 409,
+  ALREADY_CALLED: 409,
   ALREADY_STARTED: 409,
   ALREADY_READY: 409,
   NO_PARTICIPANTS: 400,
@@ -183,10 +185,16 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
     res.json({ ok: true });
   }));
 
-  app.post('/api/admin/timer', (req, res) => handle(res, () => {
-    setBingoTimer(game, req.body?.seconds);
+  app.post('/api/admin/call-window', (req, res) => handle(res, () => {
+    setCallWindow(game, req.body?.seconds);
     broadcast();
-    res.json({ ok: true, timerSec: game.timerSec });
+    res.json({ ok: true, callSec: game.callSec });
+  }));
+
+  app.post('/api/admin/call', (req, res) => handle(res, () => {
+    callItem(game, req.body?.itemIndex);
+    broadcast();
+    res.json({ ok: true });
   }));
 
   app.post('/api/admin/items', (req, res) => handle(res, () => {
@@ -194,6 +202,8 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
     broadcast();
     res.json({ ok: true });
   }));
+
+  app.get('/api/admin/items', (_req, res) => res.json({ items: game.items }));
 
   app.post('/api/admin/reset', (_req, res) => handle(res, () => {
     resetGame(game);

@@ -70,7 +70,15 @@ test('전체 흐름: items 설정 → join → mark → state', async (t) => {
   res = await post(base, '/api/admin/start');
   assert.equal(res.status, 200);
 
-  // mark (시작 후)
+  // 호출 전에는 칠할 수 없음
+  res = await post(base, '/api/mark', { participantId, cellIndex: 0, on: true });
+  assert.equal(res.status, 409);
+  assert.equal(res.body.error, 'NOT_CALLED');
+
+  // 진행자가 모든 항목 호출 (아무 칸이나 칠할 수 있게)
+  for (let i = 0; i < 25; i++) await post(base, '/api/admin/call', { itemIndex: i });
+
+  // mark (호출 후)
   res = await post(base, '/api/mark', { participantId, cellIndex: 0, on: true });
   assert.equal(res.status, 200);
   assert.equal(res.body.marked[0], true);

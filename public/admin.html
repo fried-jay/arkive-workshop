@@ -10,6 +10,11 @@
     textarea { min-height: 340px; resize: vertical; }
     .actions { display: flex; gap: 10px; margin-top: 12px; }
     .ok { color: #16a34a; font-size: 0.9rem; min-height: 1.2em; margin-top: 8px; }
+    .call-board { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin-top:8px; }
+    .call-cell { border:1px solid var(--border); border-radius:8px; background:var(--card); padding:6px 4px; font-size:0.62rem; line-height:1.15; min-height:44px; cursor:pointer; word-break:keep-all; color:var(--text); font-family:inherit; }
+    .call-cell:hover:not(:disabled) { border-color:var(--accent); background:var(--accent-soft); }
+    .call-cell.active { border-color:var(--gold); background:#fffbeb; font-weight:800; }
+    .call-cell.done { opacity:0.45; cursor:default; }
   </style>
 </head>
 <body>
@@ -37,10 +42,12 @@
       <h2>② 진행 · 시작</h2>
       <div class="status-box" id="live-status">현황 불러오는 중...</div>
       <div class="timer-row">
-        <span class="muted">전체 제한시간</span>
-        <input type="number" id="timer-input" value="0" min="0" max="3600"> 초 <span class="muted">(0 = 무제한)</span>
-        <button class="btn secondary small" id="timer-btn">시간 설정</button>
+        <span class="muted">호출 제한시간</span>
+        <input type="number" id="callsec-input" value="15" min="3" max="120"> 초
+        <button class="btn secondary small" id="callsec-btn">설정</button>
       </div>
+      <div class="roster-head" id="callboard-head" style="display:none">📢 호출판 — 누르면 그 항목이 열려요 (모두 15초 안에 찾아 칠함)</div>
+      <div id="call-board" class="call-board"></div>
       <div class="actions">
         <button class="btn" id="start-btn" disabled>🚀 게임 시작</button>
         <button class="btn ghost" id="force-start-btn">대기 없이 바로 시작</button>

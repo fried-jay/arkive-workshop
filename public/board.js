@@ -10,14 +10,16 @@ function startCd() {
   const cd = document.getElementById('board-cd');
   if (!cd) return;
   function tick() {
-    if (!lastSnap || !lastSnap.started || !lastSnap.deadline) { cd.textContent = ''; return; }
-    const left = lastSnap.deadline - (Date.now() + clockOffset);
-    if (left <= 0) { cd.textContent = '⏰ 시간 종료'; cd.classList.add('over'); clearInterval(cdTimer); return; }
-    cd.classList.remove('over');
-    cd.textContent = `⏱ ${Math.ceil(left / 1000)}초`;
+    if (!lastSnap || !lastSnap.started) { cd.textContent = ''; cd.classList.remove('over'); return; }
+    const c = lastSnap.currentCall;
+    if (!c) { cd.textContent = '📢 진행자가 다음 항목을 부르는 중…'; cd.classList.remove('over'); return; }
+    const left = Math.ceil((c.deadline - (Date.now() + clockOffset)) / 1000);
+    if (left <= 0) { cd.textContent = ''; cd.classList.remove('over'); return; }
+    cd.classList.toggle('over', left <= 5);
+    cd.textContent = `📢 ${c.text}   ·   ⏱ ${left}초`;
   }
   tick();
-  cdTimer = setInterval(tick, 250);
+  cdTimer = setInterval(tick, 300);
 }
 
 function render(snapshot) {

@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const {
-  createGame, setItems, joinGame, reshuffle, setReady, startGame, markCell, resetGame, clearBingoParticipants,
+  createGame, setItems, joinGame, reshuffle, setReady, startGame, setCallWindow, callItem, markCell, resetGame, clearBingoParticipants,
   countBingoLines, publicSnapshot, participantView,
 } = require('../lib/game');
 
@@ -88,6 +88,7 @@ test('markCell: 칠하기/해제 (시작 후)', () => {
   const game = gameWithItems();
   const p = joinGame(game, '원');
   startGame(game);
+  callItem(game, p.layout[3]);            // 그 칸 항목 호출
   markCell(game, p.id, 3, true);
   assert.equal(p.marked[3], true);
   markCell(game, p.id, 3, false);
@@ -98,6 +99,45 @@ test('markCell: 시작 전에는 칠할 수 없음', () => {
   const game = gameWithItems();
   const p = joinGame(game, '원');
   assert.throws(() => markCell(game, p.id, 0, true), /NOT_STARTED/);
+});
+
+test('callItem/markCell: 호출된 항목만 칠할 수 있음', () => {
+  const game = gameWithItems();
+  const p = joinGame(game, '원');
+  startGame(game);
+  const item = p.layout[7];
+  assert.throws(() => markCell(game, p.id, 7, true), /NOT_CALLED/); // 호출 전
+  callItem(game, item);
+  markCell(game, p.id, 7, true);
+  assert.equal(p.marked[7], true);
+  assert.throws(() => callItem(game, item), /ALREADY_CALLED/); // 중복 호출 거부
+});
+
+test('callItem: 시작 전 거부 / 잘못된 index 거부', () => {
+  const game = gameWithItems();
+  joinGame(game, '원');
+  assert.throws(() => callItem(game, 0), /NOT_STARTED/);
+  startGame(game);
+  assert.throws(() => callItem(game, 25), /CELL_INVALID/);
+  assert.throws(() => callItem(game, -1), /CELL_INVALID/);
+});
+
+test('markCell: 호출 15초 지나면 잠김(TIME_UP)', () => {
+  const game = gameWithItems();
+  const p = joinGame(game, '원');
+  startGame(game);
+  const item = p.layout[2];
+  callItem(game, item);
+  game.calls[item] = Date.now() - (game.callSec * 1000 + 100); // 시간 지난 것처럼
+  assert.throws(() => markCell(game, p.id, 2, true), /TIME_UP/);
+});
+
+test('setCallWindow: 3~120초만 허용', () => {
+  const game = gameWithItems();
+  setCallWindow(game, 20);
+  assert.equal(game.callSec, 20);
+  assert.throws(() => setCallWindow(game, 1), /TIMER_INVALID/);
+  assert.throws(() => setCallWindow(game, 999), /TIMER_INVALID/);
 });
 
 test('markCell: 없는 참가자/잘못된 칸 거부', () => {
@@ -153,6 +193,7 @@ test('resetGame: 판·시작 초기화, 참가자·items 유지', () => {
   const game = gameWithItems();
   const p = joinGame(game, '원');
   startGame(game);
+  callItem(game, p.layout[0]);
   markCell(game, p.id, 0, true);
   resetGame(game);
   assert.equal(game.participants.length, 1);      // 참가자 유지
@@ -175,7 +216,7 @@ test('publicSnapshot: 이름/레디/칸수/줄수 노출 (id 없음) + 진행 �
   const game = gameWithItems();
   const p = joinGame(game, '원');
   startGame(game);
-  for (let c = 0; c < 5; c++) markCell(game, p.id, c, true);
+  for (let c = 0; c < 5; c++) { callItem(game, p.layout[c]); markCell(game, p.id, c, true); }
   const snap = publicSnapshot(game);
   assert.equal(snap.itemsSet, true);
   assert.equal(snap.started, true);
@@ -198,6 +239,7 @@ test('participantView: 자기 판 복원 (레디/시작 포함)', () => {
   const game = gameWithItems();
   const p = joinGame(game, '원');
   startGame(game);
+  callItem(game, p.layout[0]);
   markCell(game, p.id, 0, true);
   const view = participantView(game, p.id);
   assert.equal(view.name, '원');
