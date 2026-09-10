@@ -13,13 +13,22 @@
     .target-banner { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:12px;
       padding:14px; border-radius:var(--radius-sm); background:var(--accent-soft); color:var(--accent); font-weight:800; }
     .target-banner .big { font-size:1.6rem; }
+    .round-end { margin-top:12px; padding:12px 14px; border-radius:var(--radius-sm); background:#fffbeb; border:1px solid var(--gold);
+      color:#92400e; font-weight:800; text-align:center; }
+    .clear-msg { margin-top:10px; text-align:center; font-weight:800; color:var(--ok); min-height:1.2em; }
+    .rules { margin:10px 0 0; padding-left:18px; font-size:0.88rem; color:var(--muted); }
+    .rules b { color:var(--text); }
   </style>
 </head>
 <body>
   <div class="wrap">
     <section id="join-view" class="card">
       <h1>🔍 숨은그림찾기</h1>
-      <p class="muted">본인 이름을 선택해 입장하세요. 화면 속 숨은 그림을 먼저 찾는 사람이 점수를 얻어요!</p>
+      <p class="muted">본인 이름을 선택해 입장하세요. 숨은 그림을 <b>가장 먼저 모두</b> 찾는 사람이 이겨요!</p>
+      <ul class="rules">
+        <li>다 찾은 순서대로 <b>1등 100 · 2등 70 · 3등 50 · 그 외 30점</b></li>
+        <li>1등이 나오면 <b>5초 뒤</b> 자동으로 다음 라운드 — 그 안에 다 찾으면 2·3등!</li>
+      </ul>
       <input type="text" id="roster-filter" placeholder="이름 검색" autocomplete="off">
       <div id="roster-list" class="name-grid"></div>
       <p class="error" id="join-error"></p>
@@ -36,7 +45,9 @@
         <span class="big" id="target-emoji"></span>
       </div>
       <div class="statusbar"><span id="progress"></span><span class="bingo-count" id="my-score"></span></div>
+      <div class="round-end hidden" id="round-end"></div>
       <div class="hgrid" id="grid"></div>
+      <p class="clear-msg" id="clear-msg"></p>
       <p class="error" id="play-error"></p>
     </section>
   </div>

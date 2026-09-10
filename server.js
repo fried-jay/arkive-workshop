@@ -31,7 +31,7 @@ const {
 } = require('./lib/prophecy');
 const {
   createHidden, generateRounds, setRounds: setHiddenRounds, joinHidden, startHidden, nextRound: nextHidden,
-  tapHidden, resetHidden, clearHiddenParticipants, hiddenSnapshot, hiddenParticipantView,
+  tapHidden, finishRoundIfDue, resetHidden, clearHiddenParticipants, hiddenSnapshot, hiddenParticipantView,
 } = require('./lib/hidden');
 const { loadState, createSaver } = require('./lib/persist');
 
@@ -68,13 +68,14 @@ const ERROR_STATUS = {
   BALANCE_NOT_READY: 409,
   NOT_ENOUGH_ENTRIES: 409,
   WRONG_STATE: 409,
+  ROUND_OVER: 409,
   ALREADY_ANSWERED: 409,
   ALREADY_VOTED: 409,
   OWN_QUESTION: 403,
   PARTICIPANT_NOT_FOUND: 404,
 };
 
-function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, catchmindDataFile, saveDelayMs = 500 }) {
+function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, catchmindDataFile, saveDelayMs = 500, hiddenRoundEndMs }) {
   const dir = path.dirname(dataFile);
   quizDataFile ??= path.join(dir, 'quiz-data.json');
   balanceDataFile ??= path.join(dir, 'balance-data.json');
@@ -438,6 +439,20 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
 
 
   // ---------- 숨은그림찾기 ----------
+  // 1등 클리어 시 예약된 라운드 종료를 서버 타이머로 실행 (재시작 후 복원 상태도 포함)
+  let hiddenTimer = null;
+  function scheduleHiddenRoundEnd() {
+    clearTimeout(hiddenTimer);
+    hiddenTimer = null;
+    if (hidden.status !== 'playing' || !hidden.roundEndsAt) return;
+    hiddenTimer = setTimeout(() => {
+      hiddenTimer = null;
+      if (finishRoundIfDue(hidden)) broadcastHidden();
+    }, Math.max(0, hidden.roundEndsAt - Date.now()));
+    hiddenTimer.unref?.();
+  }
+  scheduleHiddenRoundEnd();
+
   app.post('/api/hidden/join', (req, res) => handle(res, () => {
     const p = joinHidden(hidden, req.body?.name);
     broadcastHidden();
@@ -450,37 +465,43 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
 
   app.post('/api/hidden/tap', (req, res) => handle(res, () => {
     const { participantId, cellIndex } = req.body ?? {};
-    const result = tapHidden(hidden, participantId, cellIndex);
+    const result = tapHidden(hidden, participantId, cellIndex, Date.now(), hiddenRoundEndMs);
+    if (result.rank === 1) scheduleHiddenRoundEnd();
     broadcastHidden();
     res.json(result);
   }));
 
   app.post('/api/hidden/admin/generate', (req, res) => handle(res, () => {
     setHiddenRounds(hidden, generateRounds(req.body?.count));
+    scheduleHiddenRoundEnd();
     broadcastHidden();
     res.json({ ok: true, rounds: hidden.rounds.length });
   }));
 
   app.post('/api/hidden/admin/start', (_req, res) => handle(res, () => {
     startHidden(hidden);
+    scheduleHiddenRoundEnd();
     broadcastHidden();
     res.json({ ok: true });
   }));
 
   app.post('/api/hidden/admin/next', (_req, res) => handle(res, () => {
     nextHidden(hidden);
+    scheduleHiddenRoundEnd();
     broadcastHidden();
     res.json({ ok: true });
   }));
 
   app.post('/api/hidden/admin/reset', (_req, res) => handle(res, () => {
     resetHidden(hidden);
+    scheduleHiddenRoundEnd();
     broadcastHidden();
     res.json({ ok: true });
   }));
 
   app.post('/api/hidden/admin/clear-participants', (_req, res) => handle(res, () => {
     clearHiddenParticipants(hidden);
+    scheduleHiddenRoundEnd();
     broadcastHidden();
     res.json({ ok: true });
   }));

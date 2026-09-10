@@ -3,6 +3,7 @@ const assert = require('node:assert');
 const {
   createHidden, generateRounds, setRounds, joinHidden, startHidden, nextRound,
   tapHidden, resetHidden, clearHiddenParticipants, hiddenSnapshot, hiddenParticipantView,
+  finishRoundIfDue, ROUND_END_DELAY_MS,
 } = require('../lib/hidden');
 
 function readyGame(count = 3) {
@@ -53,7 +54,14 @@ test('joinHidden: 빈 이름 거부, 같은 이름 재사용', () => {
   assert.equal(joinHidden(game, ' 원 ').id, a.id);
 });
 
-test('tapHidden: 타깃 맞히면 득점, 배경/중복은 무득점', () => {
+function clearRound(game, p, now) {
+  const r = game.rounds[game.currentIndex];
+  let last;
+  r.cells.forEach((c, i) => { if (c === r.target) last = tapHidden(game, p.id, i, now); });
+  return last;
+}
+
+test('tapHidden: 찾기만으로는 무득점, 배경/중복은 무반응', () => {
   const game = readyGame();
   const p = joinHidden(game, '원');
   assert.throws(() => tapHidden(game, p.id, 0), /WRONG_STATE/); // 시작 전
@@ -61,14 +69,64 @@ test('tapHidden: 타깃 맞히면 득점, 배경/중복은 무득점', () => {
   const t = targetCell(game);
   let r = tapHidden(game, p.id, t);
   assert.equal(r.correct, true);
-  assert.equal(p.score, 1);
+  assert.equal(r.cleared, false);
+  assert.equal(p.score, 0);            // 개수 점수 없음 — 클리어 순위로만 득점
   r = tapHidden(game, p.id, t); // 중복
   assert.equal(r.alreadyFound, true);
-  assert.equal(p.score, 1);
   const b = bgCell(game);
   r = tapHidden(game, p.id, b); // 배경
   assert.equal(r.correct, false);
-  assert.equal(p.score, 1);
+  assert.equal(p.score, 0);
+});
+
+test('tapHidden: 클리어 순서대로 100/70/50/30점, 1등 나오면 라운드 종료 예약', () => {
+  const game = readyGame();
+  const ps = ['a', 'b', 'c', 'd', 'e'].map((n) => joinHidden(game, n));
+  startHidden(game);
+  assert.equal(game.roundEndsAt, null);
+  const r1 = clearRound(game, ps[0], 1000);
+  assert.deepEqual([r1.cleared, r1.rank, r1.points], [true, 1, 100]);
+  assert.equal(game.roundEndsAt, 1000 + ROUND_END_DELAY_MS);
+  assert.equal(clearRound(game, ps[1], 2000).points, 70);
+  assert.equal(clearRound(game, ps[2], 3000).points, 50);
+  assert.equal(clearRound(game, ps[3], 4000).points, 30);
+  assert.equal(game.roundEndsAt, 1000 + ROUND_END_DELAY_MS); // 1등 시점 기준 유지
+  assert.deepEqual(ps.map((p) => p.score), [100, 70, 50, 30, 0]);
+  // 종료 시각 이후 탭은 잠김
+  assert.throws(() => tapHidden(game, ps[4].id, targetCell(game), 1000 + ROUND_END_DELAY_MS), /ROUND_OVER/);
+  const snap = hiddenSnapshot(game);
+  assert.equal(snap.round.firstClear, 'a');
+  assert.deepEqual(snap.round.clears, ['a', 'b', 'c', 'd']);
+  assert.equal(snap.roundEndsAt, game.roundEndsAt);
+  assert.equal(snap.participants.find((x) => x.name === 'b').clearRank, 2);
+  assert.equal(snap.participants.find((x) => x.name === 'e').clearRank, null);
+  assert.equal(hiddenParticipantView(game, ps[1].id).clearRank, 2);
+});
+
+test('finishRoundIfDue: 예약 시각 전엔 무시, 지나면 다음 라운드로 넘기고 예약 해제', () => {
+  const game = readyGame(2);
+  const p = joinHidden(game, '원');
+  startHidden(game);
+  clearRound(game, p, 1000);
+  assert.equal(finishRoundIfDue(game, 1000 + ROUND_END_DELAY_MS - 1), false);
+  assert.equal(game.currentIndex, 0);
+  assert.equal(finishRoundIfDue(game, 1000 + ROUND_END_DELAY_MS), true);
+  assert.equal(game.currentIndex, 1);
+  assert.equal(game.roundEndsAt, null);
+  assert.equal(finishRoundIfDue(game, 99999), false); // 예약 없으면 무시
+  // 새 라운드에서 다시 1등 → 점수 누적, 마지막 라운드 종료 시 finished
+  clearRound(game, p, 5000);
+  assert.equal(p.score, 200);
+  finishRoundIfDue(game, 5000 + ROUND_END_DELAY_MS);
+  assert.equal(game.status, 'finished');
+});
+
+test('구버전 저장 상태(clears 없음)에서도 탭 동작', () => {
+  const game = readyGame();
+  const p = joinHidden(game, '원');
+  startHidden(game);
+  delete game.clears; delete game.roundEndsAt;
+  assert.equal(clearRound(game, p, 1000).points, 100);
 });
 
 test('tapHidden: 잘못된 칸/없는 참가자 거부', () => {
@@ -98,7 +156,7 @@ test('hiddenSnapshot: 진행 중 라운드/점수 노출', () => {
   assert.equal(snap.status, 'playing');
   assert.equal(snap.totalRounds, 3);
   assert.ok(snap.round.cells.length === snap.round.size);
-  assert.equal(snap.participants[0].score, 1);
+  assert.equal(snap.participants[0].score, 0);
   assert.equal(snap.participants[0].foundInRound, 1);
 });
 
@@ -124,6 +182,7 @@ test('resetHidden: 진행/점수 초기화, 참가자·라운드 유지', () => 
   assert.equal(game.participants.length, 1);   // 참가자 유지
   assert.equal(game.participants[0].score, 0); // 점수 초기화
   assert.equal(game.status, 'idle');
+  assert.equal(game.roundEndsAt, null);
   assert.equal(game.rounds.length, 3);
 });
 

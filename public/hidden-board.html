@@ -22,6 +22,10 @@
     .rank-found { color:var(--muted); font-size:0.95rem; }
     .rank-score { color:var(--accent); font-variant-numeric:tabular-nums; }
     .waiting { text-align:center; padding:60px 0; font-size:1.4rem; }
+    .clear-banner { margin:16px auto 0; max-width:560px; padding:16px 20px; border-radius:16px; background:#fffbeb; border:2px solid var(--gold);
+      color:#92400e; font-weight:900; font-size:1.5rem; text-align:center; }
+    .clear-banner .others { display:block; font-size:1rem; font-weight:700; margin-top:6px; color:#a16207; }
+    .rank-clear { color:var(--ok); font-size:0.95rem; font-weight:800; }
     h2 { font-size:1.2rem; margin:26px 0 0; }
   </style>
 </head>
@@ -29,6 +33,7 @@
   <div class="wrap">
     <div class="meta"><h1>🔍 숨은그림찾기</h1><span class="muted" id="progress"></span></div>
     <div id="stage"></div>
+    <div class="clear-banner hidden" id="clear-banner"></div>
     <h2 id="ranking-title" class="hidden">🏆 순위</h2>
     <ul class="ranking" id="ranking"></ul>
   </div>

@@ -16,10 +16,16 @@ async function post(url, body) {
 function renderStatus(snap) {
   const where = snap.status === 'playing' ? ` (라운드 ${snap.currentIndex + 1}/${snap.totalRounds} · 찾을 그림 ${snap.round ? snap.round.target : ''})`
     : ` (라운드 ${snap.totalRounds}개 · 참가 ${snap.participants.length}명)`;
-  statusBox.textContent = (LABEL[snap.status] || snap.status) + where;
+  const first = snap.status === 'playing' && snap.round && snap.round.firstClear
+    ? ` · 🏆 1등 ${snap.round.firstClear} — 5초 뒤 자동 다음 라운드` : '';
+  statusBox.textContent = (LABEL[snap.status] || snap.status) + where + first;
   const rows = [...snap.participants]
-    .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, 'ko'))
-    .map((p) => ({ name: p.name, score: p.score, status: snap.status === 'playing' ? `이번 ${p.foundInRound}개` : null, statusClass: p.foundInRound > 0 ? 'done' : 'wait' }));
+    .sort((a, b) => b.score - a.score || (a.clearRank || 99) - (b.clearRank || 99) || a.name.localeCompare(b.name, 'ko'))
+    .map((p) => ({
+      name: p.name, score: p.score,
+      status: snap.status !== 'playing' ? null : p.clearRank ? `${p.clearRank}등 클리어` : `이번 ${p.foundInRound}개`,
+      statusClass: p.clearRank ? 'done' : 'wait',
+    }));
   renderRoster(roster, rows);
 }
 
