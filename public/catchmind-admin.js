@@ -23,6 +23,18 @@ function renderStatus(snap) {
   statusBox.textContent = (LABEL[snap.status] || snap.status) + where;
   const rows = (snap.submitters || []).map((n) => ({ name: n, status: '✅ 제출', statusClass: 'done' }));
   renderRoster(roster, rows, '아직 제출한 사람이 없어요.');
+  const hb = document.getElementById('hint-btn');
+  if (hb) {
+    const c = snap.current;
+    if (snap.status === 'showing' && c) {
+      const shown = c.hintsShown || 0, total = c.hintsTotal || 0;
+      hb.textContent = `💡 힌트 공개 (${shown}/${total})`;
+      hb.disabled = total === 0 || shown >= total;
+    } else {
+      hb.textContent = '💡 힌트 공개';
+      hb.disabled = true;
+    }
+  }
 }
 
 const ERRORS = { NOT_ENOUGH_ENTRIES: '제출된 그림이 없어요.', WRONG_STATE: '지금 상태에서는 할 수 없어요.', GUESS_REQUIRED: '정답자 이름을 입력하세요.' };
@@ -39,6 +51,10 @@ for (const [id, url, label, confirmMsg] of [
     catch (err) { flash(errorMsg, ERRORS[err.message] || '실패했어요.'); }
   });
 }
+document.getElementById('hint-btn').addEventListener('click', async () => {
+  try { await post('/api/catchmind/admin/hint'); }
+  catch (err) { flash(errorMsg, ERRORS[err.message] || '실패했어요.'); }
+});
 document.getElementById('winner-btn').addEventListener('click', async () => {
   const name = winnerInput.value.trim();
   if (!name) { flash(errorMsg, '정답자 이름을 입력하세요.'); return; }

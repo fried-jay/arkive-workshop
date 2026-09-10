@@ -22,7 +22,7 @@ window.addEventListener('resize', paintShow);
 
 async function render(snap) {
   progress.textContent = `제출 ${snap.total}명`;
-  const key = `${snap.status}:${snap.currentIndex}:${snap.current ? snap.current.revealed : ''}`;
+  const key = `${snap.status}:${snap.currentIndex}:${snap.current ? snap.current.revealed + ':' + snap.current.hints.length : ''}`;
   if (key !== builtKey) {
     builtKey = key;
     stopReplay(); showCanvas = null;

@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const {
-  createCatchmind, setPromptBank, promptForName, submitCatchmind, startShow, nextShow, revealCurrent, pickWinner,
+  createCatchmind, setPromptBank, promptForName, submitCatchmind, startShow, nextShow, revealHint, revealCurrent, pickWinner,
   resetCatchmind, clearCatchmind, currentStrokes, catchmindSnapshot,
 } = require('../lib/catchmind');
 
@@ -99,7 +99,13 @@ test('제시어 뱅크: 자동 배정 + 힌트 반영', () => {
   assert.equal(g.submissions[0].word, p.word);
   assert.deepEqual(g.submissions[0].hints, p.hints);
   startShow(g);
-  assert.deepEqual(catchmindSnapshot(g).current.hints, p.hints);
+  assert.deepEqual(catchmindSnapshot(g).current.hints, []); // 공개 전엔 힌트 숨김
+  revealHint(g);
+  assert.deepEqual(catchmindSnapshot(g).current.hints, [p.hints[0]]); // 1개 공개
+  revealHint(g);
+  assert.deepEqual(catchmindSnapshot(g).current.hints, p.hints); // 2개 공개
+  revealHint(g); // 더 이상 없음
+  assert.equal(catchmindSnapshot(g).current.hintsShown, 2);
 });
 
 test('resetCatchmind: 제출물 유지, 진행/점수 초기화 · clearCatchmind: 전부 삭제', () => {
