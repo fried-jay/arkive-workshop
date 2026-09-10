@@ -8,12 +8,15 @@ const gameError = document.getElementById('game-error');
 
 let me = null;       // {participantId, name, score, answeredChoice}
 let snapshot = null; // /api/quiz/state 형태
+let clockOffset = 0; // 서버-클라 시계 보정
+let countdownTimer = null;
 
 const ERROR_MESSAGES = {
   NAME_REQUIRED: '이름을 입력해주세요.',
   PARTICIPANT_NOT_FOUND: '세션이 만료됐어요. 새로고침 후 다시 입장해주세요.',
   ALREADY_ANSWERED: '이미 답했어요!',
   WRONG_STATE: '지금은 답할 수 없어요.',
+  TIME_UP: '⏰ 시간이 끝났어요!',
 };
 
 function messageFor(code) {
@@ -46,6 +49,7 @@ function render() {
   document.getElementById('my-score').textContent = `${me.score}점`;
 
   stage.replaceChildren();
+  clearInterval(countdownTimer);
 
   if (snapshot.status === 'idle') {
     stage.appendChild(el('p', 'muted waiting', '퀴즈가 곧 시작됩니다. 잠시만 기다려주세요!'));
@@ -61,7 +65,14 @@ function render() {
 
   // question / revealed
   const q = snapshot.question;
-  stage.appendChild(el('p', 'muted', `문제 ${snapshot.currentIndex + 1} / ${snapshot.totalQuestions}`));
+  const head = el('div', 'q-head');
+  head.appendChild(el('span', 'muted', `문제 ${snapshot.currentIndex + 1} / ${snapshot.totalQuestions}`));
+  if (snapshot.status === 'question') {
+    const cd = el('span', 'countdown');
+    cd.id = 'countdown';
+    head.appendChild(cd);
+  }
+  stage.appendChild(head);
   stage.appendChild(el('p', 'question-text', q.text));
   const choices = el('div', 'choices');
   q.choices.forEach((text, i) => {
@@ -82,6 +93,7 @@ function render() {
     choices.appendChild(btn);
   });
   stage.appendChild(choices);
+  if (snapshot.status === 'question') startCountdown();
 
   if (snapshot.status === 'question' && me.answeredChoice != null) {
     stage.appendChild(el('p', 'muted waiting', '답 제출 완료! 공개를 기다려주세요.'));
@@ -94,7 +106,32 @@ function render() {
   }
 }
 
+function remainingMs() {
+  return snapshot && snapshot.deadline ? snapshot.deadline - (Date.now() + clockOffset) : Infinity;
+}
+
+function startCountdown() {
+  clearInterval(countdownTimer);
+  const cd = document.getElementById('countdown');
+  const choicesEl = document.querySelector('.choices');
+  function tick() {
+    const left = remainingMs();
+    if (left <= 0) {
+      if (cd) { cd.textContent = '⏰ 시간 종료'; cd.classList.add('over'); }
+      if (choicesEl && me && me.answeredChoice == null) {
+        choicesEl.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+      }
+      clearInterval(countdownTimer);
+      return;
+    }
+    if (cd) cd.textContent = `⏱ ${Math.ceil(left / 1000)}초`;
+  }
+  tick();
+  countdownTimer = setInterval(tick, 250);
+}
+
 async function answer(i) {
+  if (remainingMs() <= 0) { gameError.textContent = messageFor('TIME_UP'); return; }
   gameError.textContent = '';
   try {
     me = await api('POST', '/api/quiz/answer', { participantId: me.participantId, choiceIndex: i });
@@ -122,6 +159,7 @@ function connect() {
   const source = new EventSource('/api/quiz/events');
   source.onmessage = async (e) => {
     snapshot = JSON.parse(e.data);
+    if (snapshot.now) clockOffset = snapshot.now - Date.now();
     await refreshMe(); // 상태 전환(공개/다음 문제) 시 점수·내 답 동기화
     render();
   };

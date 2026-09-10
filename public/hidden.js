@@ -33,6 +33,7 @@ function show(view) {
 function renderGrid() {
   const r = me.round;
   document.getElementById('target-emoji').textContent = r.target;
+  grid.style.gridTemplateColumns = `repeat(${r.dim}, 1fr)`;
   grid.replaceChildren(...r.cells.map((emoji, i) => {
     const b = document.createElement('button');
     b.type = 'button';

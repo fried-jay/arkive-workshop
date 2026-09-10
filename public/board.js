@@ -4,7 +4,26 @@ const list = document.getElementById('list');
 const empty = document.getElementById('empty');
 const summary = document.getElementById('summary');
 
+let clockOffset = 0, cdTimer = null, lastSnap = null;
+function startCd() {
+  clearInterval(cdTimer);
+  const cd = document.getElementById('board-cd');
+  if (!cd) return;
+  function tick() {
+    if (!lastSnap || !lastSnap.started || !lastSnap.deadline) { cd.textContent = ''; return; }
+    const left = lastSnap.deadline - (Date.now() + clockOffset);
+    if (left <= 0) { cd.textContent = '⏰ 시간 종료'; cd.classList.add('over'); clearInterval(cdTimer); return; }
+    cd.classList.remove('over');
+    cd.textContent = `⏱ ${Math.ceil(left / 1000)}초`;
+  }
+  tick();
+  cdTimer = setInterval(tick, 250);
+}
+
 function render(snapshot) {
+  lastSnap = snapshot;
+  if (snapshot.now) clockOffset = snapshot.now - Date.now();
+  startCd();
   const started = snapshot.started;
   const total = snapshot.participants.length;
   const players = [...snapshot.participants].sort((a, b) => {

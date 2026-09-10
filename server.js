@@ -2,12 +2,12 @@
 const path = require('node:path');
 const express = require('express');
 const {
-  createGame, setItems, joinGame, reshuffle, setReady, startGame, markCell, resetGame, clearBingoParticipants,
+  createGame, setItems, joinGame, reshuffle, setReady, startGame, setBingoTimer, markCell, resetGame, clearBingoParticipants,
   publicSnapshot, participantView,
 } = require('./lib/game');
 const {
   createQuiz, setQuestions, joinQuiz, openNext, answerQuestion,
-  reveal, resetQuiz, clearQuizParticipants, quizSnapshot, quizParticipantView,
+  reveal, resetQuiz, clearQuizParticipants, setQuizTimer, quizSnapshot, quizParticipantView,
 } = require('./lib/quiz');
 const {
   createBalance, setRounds, joinBalance, openNextRound, voteBalance,
@@ -18,8 +18,8 @@ const {
   resetTmi, clearTmi, reviveTmi, tmiSnapshot, tmiParticipantView,
 } = require('./lib/tmi');
 const {
-  createCatchmind, joinCatchmind, assignDrawer, drawerByKey, submitDrawing,
-  submitGuess, revealRound, resetCatchmind, catchmindSnapshot, catchmindParticipantView,
+  createCatchmind, submitCatchmind, startShow, nextShow, revealCurrent, pickWinner,
+  resetCatchmind, clearCatchmind, currentStrokes, catchmindSnapshot,
 } = require('./lib/catchmind');
 const {
   createManito, joinManito, setNote, startManito, guessManito,
@@ -45,6 +45,8 @@ const ERROR_STATUS = {
   ALREADY_READY: 409,
   NO_PARTICIPANTS: 400,
   HIDDEN_NOT_READY: 409,
+  TIME_UP: 409,
+  TIMER_INVALID: 400,
   QUESTIONS_INVALID: 400,
   CHOICE_INVALID: 400,
   ROUNDS_INVALID: 400,
@@ -179,6 +181,12 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
     res.json({ ok: true });
   }));
 
+  app.post('/api/admin/timer', (req, res) => handle(res, () => {
+    setBingoTimer(game, req.body?.seconds);
+    broadcast();
+    res.json({ ok: true, timerSec: game.timerSec });
+  }));
+
   app.post('/api/admin/items', (req, res) => handle(res, () => {
     setItems(game, req.body?.items);
     broadcast();
@@ -219,6 +227,12 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
     setQuestions(quiz, req.body?.questions);
     broadcastQuiz();
     res.json({ ok: true });
+  }));
+
+  app.post('/api/quiz/admin/timer', (req, res) => handle(res, () => {
+    setQuizTimer(quiz, req.body?.seconds);
+    broadcastQuiz();
+    res.json({ ok: true, timerSec: quiz.timerSec });
   }));
 
   for (const [route, action] of [
@@ -288,54 +302,50 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
     }));
   }
 
-  // ---------- 캐치마인드 ----------
-  app.post('/api/catchmind/join', (req, res) => handle(res, () => {
-    const p = joinCatchmind(catchmind, req.body?.name);
-    broadcastCatchmind();
-    res.json(catchmindParticipantView(catchmind, p.id));
-  }));
-
-  meRoute('/api/catchmind/me/:participantId', catchmind, catchmindParticipantView);
-
-  app.get('/api/catchmind/state', (_req, res) => res.json(catchmindSnapshot(catchmind)));
-
-  app.get('/api/catchmind/strokes', (_req, res) => res.json({ strokes: catchmind.strokes }));
-
-  app.get('/api/catchmind/draw/:key', (req, res) => {
-    const drawer = drawerByKey(catchmind, req.params.key);
-    if (!drawer || catchmind.status !== 'waiting') {
-      return res.status(404).json({ error: 'DRAW_KEY_INVALID' });
-    }
-    res.json({ name: drawer.name });
-  });
-
-  app.post('/api/catchmind/draw/submit', (req, res) => handle(res, () => {
-    const { key, strokes, word } = req.body ?? {};
-    submitDrawing(catchmind, key, strokes, word);
+  // ---------- 캐치마인드 (사전 제출형) ----------
+  app.post('/api/catchmind/submit', (req, res) => handle(res, () => {
+    const { name, strokes, word } = req.body ?? {};
+    submitCatchmind(catchmind, name, strokes, word);
     broadcastCatchmind();
     res.json({ ok: true });
   }));
 
-  app.post('/api/catchmind/guess', (req, res) => handle(res, () => {
-    const { participantId, text } = req.body ?? {};
-    const result = submitGuess(catchmind, participantId, text);
+  app.get('/api/catchmind/state', (_req, res) => res.json(catchmindSnapshot(catchmind)));
+
+  app.get('/api/catchmind/strokes', (_req, res) => res.json({ strokes: currentStrokes(catchmind) }));
+
+  app.post('/api/catchmind/admin/start', (_req, res) => handle(res, () => {
+    startShow(catchmind);
     broadcastCatchmind();
-    res.json(result);
+    res.json({ ok: true });
   }));
 
-  app.post('/api/catchmind/admin/assign', (req, res) => handle(res, () => {
-    const key = assignDrawer(catchmind, req.body?.participantId);
+  app.post('/api/catchmind/admin/next', (_req, res) => handle(res, () => {
+    nextShow(catchmind);
     broadcastCatchmind();
-    res.json({ key });
+    res.json({ ok: true });
   }));
 
-  for (const [route, action] of [['reveal', revealRound], ['reset', resetCatchmind]]) {
+  app.post('/api/catchmind/admin/reveal', (_req, res) => handle(res, () => {
+    revealCurrent(catchmind);
+    broadcastCatchmind();
+    res.json({ ok: true });
+  }));
+
+  app.post('/api/catchmind/admin/winner', (req, res) => handle(res, () => {
+    pickWinner(catchmind, req.body?.name);
+    broadcastCatchmind();
+    res.json({ ok: true });
+  }));
+
+  for (const [route, action] of [['reset', resetCatchmind], ['clear', clearCatchmind]]) {
     app.post(`/api/catchmind/admin/${route}`, (_req, res) => handle(res, () => {
       action(catchmind);
       broadcastCatchmind();
       res.json({ ok: true });
     }));
   }
+
 
   // ---------- 마니또 ----------
   app.post('/api/manito/join', (req, res) => handle(res, () => {

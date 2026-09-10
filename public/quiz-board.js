@@ -13,7 +13,28 @@ function el(tag, className, text) {
   return node;
 }
 
+let clockOffset = 0;
+let cdTimer = null;
+let lastSnap = null;
+
+function startBoardCountdown() {
+  clearInterval(cdTimer);
+  const cd = document.getElementById('board-countdown');
+  if (!cd) return;
+  function tick() {
+    const left = lastSnap && lastSnap.deadline ? lastSnap.deadline - (Date.now() + clockOffset) : Infinity;
+    if (left === Infinity) return;
+    if (left <= 0) { cd.textContent = '⏰ 시간 종료'; cd.classList.add('over'); clearInterval(cdTimer); return; }
+    cd.textContent = `⏱ ${Math.ceil(left / 1000)}초`;
+  }
+  tick();
+  cdTimer = setInterval(tick, 250);
+}
+
 function render(snap) {
+  lastSnap = snap;
+  if (snap.now) clockOffset = snap.now - Date.now();
+  clearInterval(cdTimer);
   stage.replaceChildren();
   answered.textContent = '';
   progress.textContent = `참가자 ${snap.participants.length}명`;
@@ -26,6 +47,12 @@ function render(snap) {
   } else {
     progress.textContent = `문제 ${snap.currentIndex + 1} / ${snap.totalQuestions} · 참가자 ${snap.participants.length}명`;
     answered.textContent = `응답 ${snap.answeredCount} / ${snap.participants.length}`;
+    if (snap.status === 'question') {
+      const cd = el('p', 'countdown');
+      cd.id = 'board-countdown';
+      cd.style.fontSize = '1.6rem';
+      stage.appendChild(cd);
+    }
     stage.appendChild(el('p', 'question-text', snap.question.text));
     const choices = el('div', 'choices');
     snap.question.choices.forEach((text, i) => {
@@ -38,6 +65,7 @@ function render(snap) {
       choices.appendChild(div);
     });
     stage.appendChild(choices);
+    if (snap.status === 'question') startBoardCountdown();
   }
 
   // 순위는 revealed/finished에서만 (문제 푸는 중엔 집중)

@@ -1,124 +1,55 @@
 'use strict';
-
 const statusBox = document.getElementById('status-box');
-const peopleBox = document.getElementById('people');
-const linkBox = document.getElementById('link-box');
-const copyRow = document.getElementById('copy-row');
+const roster = document.getElementById('roster');
 const okMsg = document.getElementById('ok-msg');
 const errorMsg = document.getElementById('error-msg');
+const winnerInput = document.getElementById('winner-input');
 
-let selectedName = null;
-let lastSnapshot = null;
-
-const STATUS_LABEL = {
-  idle: '대기 중 — 그릴 사람을 선택해 링크를 발급하세요',
-  waiting: '그리는 중 — 링크를 받은 사람이 제출하면 시작돼요',
-  guessing: '맞추기 진행 중',
-  revealed: '정답 공개됨 — 다음 사람에게 링크를 발급하세요',
-};
-
-function flash(el, text) {
-  okMsg.textContent = '';
-  errorMsg.textContent = '';
-  el.textContent = text;
-}
-
+const LABEL = { collecting: '제출 받는 중', showing: '공개 중', finished: '종료 — 최종 순위' };
+function flash(el, t) { okMsg.textContent = ''; errorMsg.textContent = ''; el.textContent = t; }
 async function post(url, body) {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(body ?? {}),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'INTERNAL');
-  return data;
+  const res = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body || {}) });
+  if (!res.ok) throw new Error((await res.json()).error || 'INTERNAL');
 }
 
 function renderStatus(snap) {
-  lastSnapshot = snap;
-  const extra = snap.status === 'waiting' ? ` (그리는 사람: ${snap.drawerName})`
-    : snap.status === 'guessing' ? ` (${snap.drawerName}님 그림, 오답 ${snap.guesses.length}개)`
-    : ` (참가자 ${snap.participants.length}명, ${snap.roundCount}라운드 진행됨)`;
-  statusBox.textContent = (STATUS_LABEL[snap.status] || snap.status) + extra;
-
-  peopleBox.replaceChildren(...snap.participants.map((p) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'person' + (p.name === selectedName ? ' selected' : '');
-    btn.textContent = `${p.name} · ${p.score}점${p.isDrawer ? ' 🎨' : ''}`;
-    btn.addEventListener('click', () => {
-      selectedName = p.name;
-      renderStatus(lastSnapshot);
-    });
-    return btn;
-  }));
-  if (snap.participants.length === 0) {
-    peopleBox.appendChild(Object.assign(document.createElement('p'), {
-      className: 'muted', textContent: '아직 참가자가 없어요. /catchmind.html 로 입장하면 여기 나타납니다.',
-    }));
+  let where;
+  if (snap.status === 'showing') {
+    const c = snap.current;
+    where = ` (${snap.currentIndex + 1}/${snap.total}` + (c && c.revealed ? ` · 정답 "${c.word}"${c.winnerName ? ' · 정답자 ' + c.winnerName : ''}` : ' · 손들기 대기') + ')';
+  } else {
+    where = ` (${snap.total}명 제출)`;
   }
+  statusBox.textContent = (LABEL[snap.status] || snap.status) + where;
+  const rows = (snap.submitters || []).map((n) => ({ name: n, status: '✅ 제출', statusClass: 'done' }));
+  renderRoster(roster, rows, '아직 제출한 사람이 없어요.');
 }
 
-document.getElementById('assign-btn').addEventListener('click', async () => {
-  const person = lastSnapshot?.participants.find((p) => p.name === selectedName);
-  if (!person) {
-    flash(errorMsg, '먼저 그릴 사람을 선택해주세요.');
-    return;
-  }
-  try {
-    // participantId는 스냅샷에 없으므로 이름으로 재조회하지 않고 join을 재사용 (같은 이름 → 같은 참가자)
-    const view = await post('/api/catchmind/join', { name: person.name });
-    const { key } = await post('/api/catchmind/admin/assign', { participantId: view.participantId });
-    const link = `${location.origin}/catchmind-draw.html?key=${key}`;
-    linkBox.textContent = link;
-    linkBox.classList.remove('hidden');
-    copyRow.classList.remove('hidden');
-    flash(okMsg, `${person.name}님에게 아래 링크를 보내주세요!`);
-  } catch (err) {
-    flash(errorMsg, err.message === 'WRONG_STATE'
-      ? '맞추기가 진행 중이에요. 정답 공개 후 발급하세요.'
-      : '발급에 실패했어요.');
-  }
-});
-
-document.getElementById('copy-btn').addEventListener('click', async () => {
-  try {
-    await navigator.clipboard.writeText(linkBox.textContent);
-    flash(okMsg, '복사했어요! 슬랙으로 보내주세요.');
-  } catch {
-    flash(errorMsg, '복사에 실패했어요. 링크를 직접 드래그해서 복사해주세요.');
-  }
-});
-
-document.getElementById('reveal-btn').addEventListener('click', async () => {
-  try {
-    await post('/api/catchmind/admin/reveal');
-    flash(okMsg, '정답을 공개했어요.');
-  } catch {
-    flash(errorMsg, '맞추기 진행 중일 때만 공개할 수 있어요.');
-  }
-});
-
-document.getElementById('reset-btn').addEventListener('click', async () => {
-  if (!confirm('참가자와 점수가 모두 초기화됩니다. 리셋할까요?')) return;
-  try {
-    await post('/api/catchmind/admin/reset');
-    linkBox.classList.add('hidden');
-    copyRow.classList.add('hidden');
-    flash(okMsg, '리셋 완료!');
-  } catch {
-    flash(errorMsg, '리셋에 실패했어요.');
-  }
+const ERRORS = { NOT_ENOUGH_ENTRIES: '제출된 그림이 없어요.', WRONG_STATE: '지금 상태에서는 할 수 없어요.', GUESS_REQUIRED: '정답자 이름을 입력하세요.' };
+for (const [id, url, label, confirmMsg] of [
+  ['start-btn', '/api/catchmind/admin/start', '공개를 시작했어요!', null],
+  ['next-btn', '/api/catchmind/admin/next', '다음 그림으로.', null],
+  ['reveal-btn', '/api/catchmind/admin/reveal', '정답을 공개했어요. (정답자 없음)', null],
+  ['reset-btn', '/api/catchmind/admin/reset', '진행 리셋 완료. (제출물 유지)', '점수·진행을 초기화할까요? (제출물 유지)'],
+  ['clear-btn', '/api/catchmind/admin/clear', '제출물을 전부 삭제했어요.', '제출된 그림을 모두 삭제할까요?'],
+]) {
+  document.getElementById(id).addEventListener('click', async () => {
+    if (confirmMsg && !confirm(confirmMsg)) return;
+    try { await post(url); flash(okMsg, label); }
+    catch (err) { flash(errorMsg, ERRORS[err.message] || '실패했어요.'); }
+  });
+}
+document.getElementById('winner-btn').addEventListener('click', async () => {
+  const name = winnerInput.value.trim();
+  if (!name) { flash(errorMsg, '정답자 이름을 입력하세요.'); return; }
+  try { await post('/api/catchmind/admin/winner', { name }); flash(okMsg, `${name} 정답 처리! (+100, 그린 사람 +50)`); winnerInput.value = ''; }
+  catch (err) { flash(errorMsg, ERRORS[err.message] || '실패했어요.'); }
 });
 
 function connect() {
-  const source = new EventSource('/api/catchmind/events');
-  source.onmessage = (e) => renderStatus(JSON.parse(e.data));
-  source.onerror = () => {
-    source.close();
-    setTimeout(connect, 2000);
-  };
+  const s = new EventSource('/api/catchmind/events');
+  s.onmessage = (e) => renderStatus(JSON.parse(e.data));
+  s.onerror = () => { s.close(); setTimeout(connect, 2000); };
 }
-
 fetch('/api/catchmind/state').then((r) => r.json()).then(renderStatus);
 connect();

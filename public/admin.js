@@ -71,14 +71,17 @@ const forceStartBtn = document.getElementById('force-start-btn');
 const roster = document.getElementById('roster');
 const startOk = document.getElementById('start-ok');
 const startError = document.getElementById('start-error');
+const timerInput = document.getElementById('timer-input');
 
 function renderLive(snap) {
   const total = snap.participants.length;
   const ready = snap.readyCount;
   const allReady = total > 0 && ready === total;
 
+  if (timerInput && document.activeElement !== timerInput && snap.timerSec != null) timerInput.value = snap.timerSec;
   if (snap.started) {
-    liveStatus.textContent = `▶ 진행 중 · 참가자 ${total}명`;
+    const limit = snap.timerSec > 0 ? ` · 제한 ${snap.timerSec}초` : '';
+    liveStatus.textContent = `▶ 진행 중 · 참가자 ${total}명${limit}`;
   } else if (total === 0) {
     liveStatus.textContent = '참가자를 기다리는 중이에요. (0명)';
   } else {
@@ -123,6 +126,15 @@ async function doStart() {
       : '시작에 실패했어요.';
   }
 }
+document.getElementById('timer-btn').addEventListener('click', async () => {
+  try {
+    await post('/api/admin/timer', { seconds: Number(timerInput.value) });
+    startOk.textContent = Number(timerInput.value) > 0 ? `제한시간 ${Number(timerInput.value)}초 설정 완료.` : '제한시간 없음으로 설정.';
+    startError.textContent = '';
+  } catch {
+    startError.textContent = '0~3600초 사이로 입력해주세요.';
+  }
+});
 startBtn.addEventListener('click', doStart);
 forceStartBtn.addEventListener('click', () => {
   if (confirm('전원 레디가 아니어도 지금 바로 시작할까요?')) doStart();

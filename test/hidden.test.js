@@ -21,12 +21,13 @@ function bgCell(game) {
 }
 
 test('generateRounds: 요청 수만큼, 각 라운드에 타깃이 존재', () => {
-  const rounds = generateRounds(5);
-  assert.equal(rounds.length, 5);
+  const rounds = generateRounds(4);
+  assert.equal(rounds.length, 4);
+  assert.deepEqual(rounds.map((r) => r.dim), [5, 6, 7, 8]); // 단계별 격자 증가
   for (const r of rounds) {
-    assert.equal(r.cells.length, r.size);
+    assert.equal(r.cells.length, r.dim * r.dim);
     const targets = r.cells.filter((c) => c === r.target).length;
-    assert.ok(targets >= 4 && targets <= 6, `타깃 수 ${targets}`);
+    assert.equal(targets, r.dim); // 타깃 수 = 격자 한 변
     assert.notEqual(r.bg, r.target);
   }
 });

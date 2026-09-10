@@ -4,6 +4,7 @@ const input = document.getElementById('questions-input');
 const parseInfo = document.getElementById('parse-info');
 const statusBox = document.getElementById('status-box');
 const roster = document.getElementById('roster');
+const timerInput = document.getElementById('timer-input');
 const okMsg = document.getElementById('ok-msg');
 const errorMsg = document.getElementById('error-msg');
 
@@ -70,6 +71,7 @@ function renderStatus(snap) {
     : ` (등록된 문제 ${snap.totalQuestions}개, 참가자 ${snap.participants.length}명)`;
   statusBox.textContent = (STATUS_LABEL[snap.status] || snap.status) + where;
 
+  if (timerInput && document.activeElement !== timerInput && snap.timerSec) timerInput.value = snap.timerSec;
   const active = snap.status === 'question' || snap.status === 'revealed';
   const rows = [...snap.participants]
     .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, 'ko'))
@@ -137,6 +139,15 @@ document.getElementById('clear-btn').addEventListener('click', async () => {
   }
 });
 
+
+document.getElementById('timer-btn').addEventListener('click', async () => {
+  try {
+    await post('/api/quiz/admin/timer', { seconds: Number(timerInput.value) });
+    flash(okMsg, `문제당 제한시간을 ${Number(timerInput.value)}초로 설정했어요.`);
+  } catch {
+    flash(errorMsg, '3~120초 사이로 입력해주세요.');
+  }
+});
 
 function connect() {
   const source = new EventSource('/api/quiz/events');

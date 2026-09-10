@@ -14,6 +14,8 @@ const readyStatus = document.getElementById('ready-status');
 const readyCountEl = document.getElementById('ready-count');
 
 let me = null; // {participantId, name, cells, marked, ready, started, bingoLines}
+let clockOffset = 0;
+let bingoTimer = null;
 
 const ERROR_MESSAGES = {
   ITEMS_NOT_SET: '아직 게임이 준비되지 않았어요. 진행자를 기다려주세요!',
@@ -22,6 +24,7 @@ const ERROR_MESSAGES = {
   NOT_STARTED: '아직 시작 전이에요. 진행자가 시작하면 칠할 수 있어요.',
   ALREADY_STARTED: '이미 게임이 시작됐어요.',
   ALREADY_READY: '레디 상태에서는 배치를 바꿀 수 없어요. 레디를 취소하고 다시 섞어주세요.',
+  TIME_UP: '⏰ 시간이 끝났어요!',
 };
 
 function messageFor(code) {
@@ -50,7 +53,31 @@ function renderBoard(target, markable) {
   }));
 }
 
+function bingoRemaining() {
+  return me && me.deadline ? me.deadline - (Date.now() + clockOffset) : Infinity;
+}
+
+function startBingoCountdown() {
+  clearInterval(bingoTimer);
+  const cd = document.getElementById('bingo-countdown');
+  if (!me.deadline) { if (cd) cd.textContent = ''; return; }
+  function tick() {
+    const left = bingoRemaining();
+    if (left <= 0) {
+      if (cd) { cd.textContent = '⏰ 시간 종료'; cd.classList.add('over'); }
+      playGrid.querySelectorAll('button').forEach((b) => { b.disabled = true; });
+      clearInterval(bingoTimer);
+      return;
+    }
+    if (cd) cd.textContent = `⏱ ${Math.ceil(left / 1000)}초`;
+  }
+  tick();
+  bingoTimer = setInterval(tick, 250);
+}
+
 function render() {
+  if (me && me.now) clockOffset = me.now - Date.now();
+  clearInterval(bingoTimer);
   joinView.classList.add('hidden');
   gameView.classList.remove('hidden');
   document.getElementById('greeting').textContent = `${me.name}의 빙고판`;
@@ -64,6 +91,7 @@ function render() {
     document.getElementById('marked-count').textContent = `칠한 칸 ${count} / 25`;
     document.getElementById('bingo-count').textContent =
       me.bingoLines > 0 ? `🎉 빙고 ${me.bingoLines}줄!` : '빙고 0줄';
+    startBingoCountdown();
   } else {
     // 시작 전: 배치 조정 + 레디
     playView.classList.add('hidden');
@@ -79,6 +107,7 @@ function render() {
 async function toggle(i) {
   gameError.textContent = '';
   if (!me.started) { gameError.textContent = messageFor('NOT_STARTED'); return; }
+  if (bingoRemaining() <= 0) { gameError.textContent = messageFor('TIME_UP'); return; }
   try {
     me = await api('POST', '/api/mark', {
       participantId: me.participantId,

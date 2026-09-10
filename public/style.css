@@ -266,3 +266,10 @@ input[type="text"]:focus, textarea:focus {
 .name-btn:hover { border-color:var(--accent-2); background:var(--accent-soft); }
 .name-btn:active { transform:scale(0.96); }
 #roster-filter { margin-bottom:2px; }
+
+/* ---- 퀴즈/타이머 카운트다운 ---- */
+.q-head { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.countdown { font-weight:800; color:var(--accent); font-variant-numeric:tabular-nums; font-size:1.05rem; }
+.countdown.over { color:var(--danger); }
+.timer-row { display:flex; align-items:center; gap:8px; margin-top:12px; flex-wrap:wrap; }
+.timer-row input { width:64px; }

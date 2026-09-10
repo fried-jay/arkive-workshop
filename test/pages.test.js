@@ -17,7 +17,7 @@ test('정적 페이지 서빙', async (t) => {
     '/balance.html', '/balance-board.html', '/balance-admin.html',
     '/tmi.html', '/tmi-board.html', '/tmi-admin.html',
     '/manual.html', '/host.html',
-    '/catchmind.html', '/catchmind-draw.html', '/catchmind-board.html', '/catchmind-admin.html',
+    '/catchmind.html', '/catchmind-board.html', '/catchmind-admin.html',
     '/manito.html', '/manito-board.html', '/manito-admin.html',
     '/prophecy.html', '/prophecy-board.html', '/prophecy-admin.html',
     '/hidden.html', '/hidden-board.html', '/hidden-admin.html',

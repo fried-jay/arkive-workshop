@@ -17,6 +17,7 @@ function render(snap) {
       banner.append(el('span', null, `라운드 ${snap.currentIndex + 1} / ${snap.totalRounds} · 이 그림을 찾아라!`), el('span', 'big', snap.round.target));
       stage.appendChild(banner);
       const g = el('div', 'hgrid');
+      g.style.gridTemplateColumns = `repeat(${snap.round.dim}, 1fr)`;
       g.replaceChildren(...snap.round.cells.map((e) => el('div', 'hcell', e)));
       stage.appendChild(g);
     } else if (snap.status === 'finished') {

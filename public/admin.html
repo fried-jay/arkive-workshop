@@ -36,6 +36,11 @@
     <section class="card">
       <h2>② 진행 · 시작</h2>
       <div class="status-box" id="live-status">현황 불러오는 중...</div>
+      <div class="timer-row">
+        <span class="muted">전체 제한시간</span>
+        <input type="number" id="timer-input" value="0" min="0" max="3600"> 초 <span class="muted">(0 = 무제한)</span>
+        <button class="btn secondary small" id="timer-btn">시간 설정</button>
+      </div>
       <div class="actions">
         <button class="btn" id="start-btn" disabled>🚀 게임 시작</button>
         <button class="btn ghost" id="force-start-btn">대기 없이 바로 시작</button>
