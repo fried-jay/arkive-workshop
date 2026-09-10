@@ -17,10 +17,14 @@ async function fetchStrokes() {
   try { strokes = (await (await fetch('/api/catchmind/strokes')).json()).strokes || []; } catch { strokes = []; }
 }
 
+function paintShow() { if (showCanvas) renderStrokes(showCanvas, strokes); }
+window.addEventListener('resize', paintShow);
+
 async function render(snap) {
   progress.textContent = `제출 ${snap.total}명`;
   const key = `${snap.status}:${snap.currentIndex}:${snap.current ? snap.current.revealed : ''}`;
   if (key !== builtKey) {
+    builtKey = key;
     stopReplay(); showCanvas = null;
     stage.replaceChildren();
 
@@ -38,7 +42,8 @@ async function render(snap) {
       stage.appendChild(el('p', 'muted', `${snap.currentIndex + 1} / ${snap.total}번째 그림`));
       showCanvas = document.createElement('canvas');
       stage.appendChild(showCanvas);
-      renderStrokes(showCanvas, strokes);
+      paintShow();
+      requestAnimationFrame(paintShow);
       const controls = el('div'); controls.style.cssText = 'margin-top:10px;display:flex;gap:8px;';
       const rb = el('button', 'btn secondary small', '▶ 그리는 과정 다시 보기');
       rb.addEventListener('click', () => startReplay(showCanvas));
@@ -58,7 +63,6 @@ async function render(snap) {
           : `아무도 못 맞혔어요… 정답은 "${snap.current.word}" (그린 사람: ${snap.current.drawerName})`));
       }
     }
-    builtKey = key;
   }
 
   const showRank = snap.scores.length > 0;

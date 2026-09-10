@@ -4,7 +4,7 @@
 
 function setupCanvas(canvas) {
   const dpr = window.devicePixelRatio || 1;
-  const width = canvas.clientWidth;
+  const width = canvas.clientWidth || Math.round(canvas.getBoundingClientRect().width) || (canvas.parentElement && canvas.parentElement.clientWidth) || 600;
   const height = Math.round(width * 0.75); // 4:3
   canvas.style.height = `${height}px`;
   canvas.width = Math.round(width * dpr);
