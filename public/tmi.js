@@ -9,6 +9,13 @@ const myTmiBox = document.getElementById('my-tmi');
 let me = null;       // {participantId, name, tmis}
 let snapshot = null;
 
+// 개인화 링크(?name=)면 이름 자동 채움·고정
+const qName = new URLSearchParams(location.search).get('name');
+if (qName) {
+  const ni = document.getElementById('name-input');
+  if (ni) { ni.value = qName; ni.readOnly = true; }
+}
+
 const ERROR_MESSAGES = {
   NAME_REQUIRED: '이름을 입력해주세요.',
   TMI_REQUIRED: 'TMI 3개를 모두 채워주세요.',
