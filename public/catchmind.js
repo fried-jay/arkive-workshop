@@ -13,12 +13,30 @@ let width = 5;
 
 // 개인화 링크(?name=)면 이름 자동 채움(고정), 아니면 이전 입력 복원
 const qName = new URLSearchParams(location.search).get('name');
+let assignedWord = null;
 if (qName) {
   nameInput.value = qName;
   nameInput.readOnly = true;
 } else {
   try { nameInput.value = localStorage.getItem('catchmind:name') || ''; } catch (e) {}
 }
+
+// 제시어 자동 배정(뱅크가 있으면): 그릴 단어를 보여주고 단어 입력칸은 숨김
+async function loadPrompt() {
+  const who = (nameInput.value || '').trim();
+  if (!who) return;
+  try {
+    const r = await (await fetch('/api/catchmind/prompt?name=' + encodeURIComponent(who))).json();
+    if (r.word) {
+      assignedWord = r.word;
+      document.getElementById('prompt-word').textContent = r.word;
+      document.getElementById('prompt-banner').classList.remove('hidden');
+      wordInput.classList.add('hidden');
+      wordInput.value = r.word;
+    }
+  } catch (e) {}
+}
+loadPrompt();
 
 function redraw() {
   renderStrokes(canvas, current ? [...strokes, current] : strokes);
@@ -50,7 +68,7 @@ window.addEventListener('resize', redraw);
 document.getElementById('submit-btn').addEventListener('click', async () => {
   err.textContent = '';
   const name = nameInput.value.trim();
-  const word = wordInput.value.trim();
+  const word = assignedWord || wordInput.value.trim();
   if (!name) { err.textContent = '이름을 입력해주세요.'; return; }
   if (!word) { err.textContent = '정답 단어를 입력해주세요.'; return; }
   if (strokes.length === 0) { err.textContent = '그림을 그려주세요!'; return; }

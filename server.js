@@ -18,7 +18,7 @@ const {
   resetTmi, clearTmi, reviveTmi, tmiSnapshot, tmiParticipantView,
 } = require('./lib/tmi');
 const {
-  createCatchmind, submitCatchmind, startShow, nextShow, revealCurrent, pickWinner,
+  createCatchmind, setPromptBank, promptForName, submitCatchmind, startShow, nextShow, revealCurrent, pickWinner,
   resetCatchmind, clearCatchmind, currentStrokes, catchmindSnapshot,
 } = require('./lib/catchmind');
 const {
@@ -47,6 +47,7 @@ const ERROR_STATUS = {
   HIDDEN_NOT_READY: 409,
   TIME_UP: 409,
   TIMER_INVALID: 400,
+  PROMPTS_INVALID: 400,
   QUESTIONS_INVALID: 400,
   CHOICE_INVALID: 400,
   ROUNDS_INVALID: 400,
@@ -311,6 +312,17 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
   }));
 
   app.get('/api/catchmind/state', (_req, res) => res.json(catchmindSnapshot(catchmind)));
+
+  app.get('/api/catchmind/prompt', (req, res) => {
+    const p = promptForName(catchmind, req.query.name);
+    res.json({ word: p ? p.word : null });
+  });
+
+  app.post('/api/catchmind/admin/prompts', (req, res) => handle(res, () => {
+    setPromptBank(catchmind, req.body?.prompts);
+    broadcastCatchmind();
+    res.json({ ok: true, count: catchmind.promptBank.length });
+  }));
 
   app.get('/api/catchmind/strokes', (_req, res) => res.json({ strokes: currentStrokes(catchmind) }));
 

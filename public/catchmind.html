@@ -21,6 +21,7 @@
       <h1>🎨 캐치마인드 — 그림 제출</h1>
       <p class="muted">정답 단어를 정하고 그림으로 표현해 제출하세요. 행사 때 하나씩 공개해 다 같이 맞힙니다. (정답 단어는 공개 전까지 아무도 못 봐요)</p>
       <input type="text" id="name-input" placeholder="이름" autocomplete="off" maxlength="20">
+      <div id="prompt-banner" class="hidden" style="margin:8px 0;padding:14px;border-radius:12px;background:var(--accent-soft);color:var(--accent);font-weight:800;font-size:1.15rem">✏️ 제시어: <span id="prompt-word"></span></div>
       <input type="text" id="word-input" placeholder="정답 단어 (예: 맥북)" autocomplete="off" maxlength="30">
       <div class="toolbar">
         <button class="color active" type="button" style="background:#111827" data-color="#111827" aria-label="검정"></button>

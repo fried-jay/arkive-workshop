@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const {
-  createCatchmind, submitCatchmind, startShow, nextShow, revealCurrent, pickWinner,
+  createCatchmind, setPromptBank, promptForName, submitCatchmind, startShow, nextShow, revealCurrent, pickWinner,
   resetCatchmind, clearCatchmind, currentStrokes, catchmindSnapshot,
 } = require('../lib/catchmind');
 
@@ -87,6 +87,19 @@ test('catchmindSnapshot: 수집/공개 상태, 정답은 공개 전 미노출', 
   snap = catchmindSnapshot(g);
   assert.equal(snap.current.word, g.submissions[0].word);
   assert.equal(snap.scores[0].score, 100);
+});
+
+test('제시어 뱅크: 자동 배정 + 힌트 반영', () => {
+  const g = createCatchmind();
+  setPromptBank(g, [{ word: '회의', hints: ['여러 명', '길어짐'] }, { word: '야근', hints: ['밤', '늦게'] }]);
+  const p = promptForName(g, '가');
+  assert.ok(['회의', '야근'].includes(p.word));
+  assert.equal(promptForName(g, '가').word, p.word); // 결정적
+  submitCatchmind(g, '가', STROKES, '무시될단어');   // 뱅크가 있으면 제공 단어 무시
+  assert.equal(g.submissions[0].word, p.word);
+  assert.deepEqual(g.submissions[0].hints, p.hints);
+  startShow(g);
+  assert.deepEqual(catchmindSnapshot(g).current.hints, p.hints);
 });
 
 test('resetCatchmind: 제출물 유지, 진행/점수 초기화 · clearCatchmind: 전부 삭제', () => {

@@ -46,6 +46,19 @@ document.getElementById('winner-btn').addEventListener('click', async () => {
   catch (err) { flash(errorMsg, ERRORS[err.message] || '실패했어요.'); }
 });
 
+document.getElementById('prompts-btn').addEventListener('click', async () => {
+  const prompts = document.getElementById('prompts-input').value.split('\n')
+    .map((line) => line.split('|').map((x) => x.trim()))
+    .filter((parts) => parts[0])
+    .map((parts) => ({ word: parts[0], hints: parts.slice(1, 3).filter(Boolean) }));
+  if (prompts.length === 0) { flash(errorMsg, '제시어를 입력하세요.'); return; }
+  try {
+    const res = await fetch('/api/catchmind/admin/prompts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ prompts }) });
+    if (!res.ok) throw new Error();
+    document.getElementById('prompts-ok').textContent = `제시어 ${prompts.length}개 등록 완료!`;
+  } catch { flash(errorMsg, '등록에 실패했어요.'); }
+});
+
 function connect() {
   const s = new EventSource('/api/catchmind/events');
   s.onmessage = (e) => renderStatus(JSON.parse(e.data));

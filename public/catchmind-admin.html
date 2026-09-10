@@ -14,6 +14,14 @@
       <p class="muted">참가자가 미리 제출한 그림을 하나씩 공개하고, 손든 사람 중 정답자를 지정하세요.</p>
     </div>
     <section class="card">
+      <h2>제시어 뱅크 (선택)</h2>
+      <p class="muted">한 줄에 하나: <code>제시어 | 힌트1 | 힌트2</code>. 등록하면 참가자 링크에 제시어가 자동 배정돼요. (비워두면 참가자가 자유 단어로 그림)</p>
+      <textarea id="prompts-input" style="min-height:160px" placeholder="회의 | 여러 명이 모여요 | 가끔 길어져요"></textarea>
+      <div class="actions"><button class="btn" id="prompts-btn">제시어 등록</button></div>
+      <p class="ok" id="prompts-ok"></p>
+    </section>
+
+    <section class="card">
       <div class="status-box" id="status-box">상태 불러오는 중...</div>
       <div class="roster-head">🖼️ 제출자</div>
       <ul class="roster" id="roster"></ul>

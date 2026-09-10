@@ -44,6 +44,12 @@ async function render(snap) {
       rb.addEventListener('click', () => startReplay(showCanvas));
       controls.appendChild(rb);
       stage.appendChild(controls);
+      if (snap.current.hints && snap.current.hints.length) {
+        const hb = el('p', 'muted');
+        hb.style.cssText = 'font-weight:800;margin-top:8px';
+        hb.textContent = '💡 힌트  ' + snap.current.hints.map((h, i) => `${i + 1}) ${h}`).join('    ');
+        stage.appendChild(hb);
+      }
       if (!snap.current.revealed) {
         stage.appendChild(el('p', 'owner-reveal', '🙌 손들어 맞혀보세요!'));
       } else {
