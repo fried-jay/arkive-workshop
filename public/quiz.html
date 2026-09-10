@@ -32,12 +32,10 @@
   <div class="wrap">
     <section id="join-view" class="card">
       <h1>⚡ 워크숍 퀴즈</h1>
-      <p class="muted">이름을 입력하고 입장하세요.</p>
-      <form id="join-form">
-        <input type="text" id="name-input" placeholder="이름" autocomplete="off" maxlength="20">
-        <p class="error" id="join-error"></p>
-        <button class="btn" type="submit">입장하기</button>
-      </form>
+      <p class="muted">본인 이름을 선택해 입장하세요.</p>
+      <input type="text" id="roster-filter" placeholder="이름 검색" autocomplete="off">
+      <div id="roster-list" class="name-grid"></div>
+      <p class="error" id="join-error"></p>
     </section>
 
     <section id="game-view" class="card hidden">
@@ -49,6 +47,7 @@
       <p class="error" id="game-error"></p>
     </section>
   </div>
+  <script src="/roster-join.js"></script>
   <script src="/quiz.js"></script>
 </body>
 </html>

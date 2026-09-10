@@ -1,6 +1,7 @@
 'use strict';
 
 const statusBox = document.getElementById('status-box');
+const roster = document.getElementById('roster');
 const judge = document.getElementById('judge');
 const okMsg = document.getElementById('ok-msg');
 const errorMsg = document.getElementById('error-msg');
@@ -35,6 +36,22 @@ function el(tag, className, text) {
 
 function renderStatus(snap) {
   statusBox.textContent = `${STATUS_LABEL[snap.status] || snap.status} (제출 ${snap.participantCount}명)`;
+
+  let rows;
+  if (snap.status === 'revealed' && snap.prophecies) {
+    rows = [...snap.prophecies]
+      .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, 'ko'))
+      .map((p) => ({
+        name: p.name,
+        score: p.score,
+        status: p.hit === true ? '⭕ 적중' : (p.hit === false ? '❌ 실패' : '❓ 미판정'),
+        statusClass: p.hit === true ? 'done' : (p.hit === false ? 'bad' : 'wait'),
+      }));
+  } else {
+    rows = (snap.names || []).map((n) => ({ name: n, status: '✅ 제출', statusClass: 'done' }));
+  }
+  renderRoster(roster, rows, '아직 제출한 사람이 없어요.');
+
   judge.replaceChildren();
   if (snap.status !== 'revealed') return;
   for (const p of snap.prophecies) {

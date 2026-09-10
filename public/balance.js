@@ -127,16 +127,20 @@ function connect() {
   };
 }
 
-document.getElementById('join-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  joinError.textContent = '';
-  try {
-    me = await api('POST', '/api/balance/join', { name: document.getElementById('name-input').value });
-    localStorage.setItem('balance:participantId', me.participantId);
-    render();
-  } catch (err) {
-    joinError.textContent = ERROR_MESSAGES[err.message] || '문제가 발생했어요.';
-  }
+setupRosterJoin({
+  stateUrl: '/api/balance/state',
+  listEl: document.getElementById('roster-list'),
+  filterEl: document.getElementById('roster-filter'),
+  onPick: async (pickedName) => {
+    joinError.textContent = '';
+    try {
+      me = await api('POST', '/api/balance/join', { name: pickedName });
+      localStorage.setItem('balance:participantId', me.participantId);
+      render();
+    } catch (err) {
+      joinError.textContent = ERROR_MESSAGES[err.message] || '문제가 발생했어요.';
+    }
+  },
 });
 
 (async function init() {

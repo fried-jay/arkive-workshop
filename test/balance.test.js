@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const {
   createBalance, setRounds, joinBalance, openNextRound, voteBalance,
-  revealBalance, resetBalance, balanceSnapshot, balanceParticipantView,
+  revealBalance, resetBalance, clearBalanceParticipants, balanceSnapshot, balanceParticipantView,
 } = require('../lib/balance');
 
 const ROUNDS = [
@@ -21,11 +21,13 @@ test('setRounds: 검증 — 빈 배열/빈 항목 거부, 등록 시 진행 초�
   assert.throws(() => setRounds(game, []), /ROUNDS_INVALID/);
   assert.throws(() => setRounds(game, [{ a: 'A', b: ' ' }]), /ROUNDS_INVALID/);
   setRounds(game, ROUNDS);
-  joinBalance(game, '원');
+  const p0 = joinBalance(game, '원');
   openNextRound(game);
+  p0.score = 40;
   setRounds(game, ROUNDS);
+  assert.equal(game.participants.length, 1);
+  assert.equal(game.participants[0].score, 0);
   assert.equal(game.status, 'idle');
-  assert.equal(game.participants.length, 0);
 });
 
 test('joinBalance: 빈 이름 거부, 같은 이름 재사용', () => {
@@ -110,7 +112,16 @@ test('resetBalance: 참가자 초기화, 라운드 유지 / participantView 복�
   assert.equal(view.name, '원');
   assert.equal(balanceParticipantView(game, 'nope'), null);
   resetBalance(game);
-  assert.equal(game.participants.length, 0);
+  assert.equal(game.participants.length, 1);   // 참가자 유지
+  assert.equal(game.participants[0].score, 0); // 점수 초기화
   assert.equal(game.rounds.length, 2);
   assert.equal(game.status, 'idle');
+});
+
+test('clearBalanceParticipants: 참가자만 제거, 라운드 유지', () => {
+  const game = readyBalance();
+  joinBalance(game, '원');
+  clearBalanceParticipants(game);
+  assert.equal(game.participants.length, 0);
+  assert.equal(game.rounds.length, 2);
 });

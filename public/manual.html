@@ -262,9 +262,9 @@
       <tr><td>🤫 TMI</td><td><code>/tmi.html</code></td><td><code>/tmi-board.html</code></td><td><code>/tmi-admin.html</code></td></tr>
       <tr><td>⚖️ 밸런스</td><td><code>/balance.html</code></td><td><code>/balance-board.html</code></td><td><code>/balance-admin.html</code></td></tr>
       <tr><td>🎨 캐치마인드</td><td><code>/catchmind.html</code></td><td><code>/catchmind-board.html</code></td><td><code>/catchmind-admin.html</code></td></tr>
-      <tr><td>🥷 비밀미션</td><td><code>/mission.html</code></td><td><code>/mission-board.html</code></td><td><code>/mission-admin.html</code></td></tr>
       <tr><td>💌 마니또</td><td><code>/manito.html</code></td><td><code>/manito-board.html</code></td><td><code>/manito-admin.html</code></td></tr>
       <tr><td>🔮 몰래 예언</td><td><code>/prophecy.html</code></td><td><code>/prophecy-board.html</code></td><td><code>/prophecy-admin.html</code></td></tr>
+      <tr><td>🔍 숨은그림찾기</td><td><code>/hidden.html</code></td><td><code>/hidden-board.html</code></td><td><code>/hidden-admin.html</code></td></tr>
     </table>
   </div>
   <p class="muted"><small>주소를 외울 필요 없이 <b>진행자 콘솔</b>(<code>/host.html</code>)에서 모든 관리자·현황판을 메뉴로 열 수 있어요. 관리자 페이지는 별도 비밀번호가 없으니 링크를 진행자만 알고 있으면 됩니다.</small></p>
@@ -393,19 +393,6 @@ npm start     # http://localhost:3000</pre></li>
     </ul>
   </div>
 
-  <div class="game" style="--game-color:#475569; --game-soft:#eef1f5">
-    <h2>🥷 비밀미션 <span class="chip">워크숍 내내 백그라운드</span></h2>
-    <p class="sub">각자 비밀미션을 받아 워크숍 내내 몰래 수행하고, 다른 사람 미션을 간파해 무효화하는 메타게임. 다른 게임과 동시에 돌아가요.</p>
-    <h3>진행</h3>
-    <ol class="steps">
-      <li>진행자: <code>/mission-admin.html</code>에서 미션 등록 (한 줄에 하나, <b>기본 미션 20개 채우기</b> 버튼 있음)</li>
-      <li>참가자 입장 후 <b>게임 시작</b> → 각자 폰에 비밀미션 배정. <b>미션 풀은 전원 공개</b>, 누가 뭘 가졌는지만 비밀</li>
-      <li>수행 후 폰에서 <b>성공 신고</b> (+100, 양심 기반 — 공개 때 검증 타임)</li>
-      <li>다른 사람 행동이 수상하면 <b>간파</b>: 사람 + 미션을 골라 지목 → 적중 시 그 미션 무효 +50, 오판 -20</li>
-      <li>워크숍 끝날 때 <b>전체 공개</b> → "아까 그게 미션이었어?!" 검증 토크</li>
-    </ol>
-    <p class="score">성공 신고 +100 &nbsp;·&nbsp; 간파 적중 +50 &nbsp;·&nbsp; 간파 오판 -20</p>
-  </div>
 
   <div class="game" style="--game-color:#e11d48; --game-soft:#fdeef2">
     <h2>💌 마니또 <span class="chip">비밀 배정 · 대공개</span></h2>
@@ -419,7 +406,7 @@ npm start     # http://localhost:3000</pre></li>
     </ol>
     <h3>팁</h3>
     <ul>
-      <li>비밀미션과 같이 돌리면 하루 종일 서로를 의심하고 관찰하는 그림이 완성됩니다 🤝</li>
+      <li>몰래 예언과 같이 돌리면 하루 종일 서로를 챙기고 관찰하는 그림이 완성됩니다 🤝</li>
     </ul>
   </div>
 
@@ -437,13 +424,13 @@ npm start     # http://localhost:3000</pre></li>
 
   <h2>2부 — 후암별장 🍖</h2>
   <p><b>17:00 ~ 23:00</b> · 후암별장 서울바베큐장 (서울 용산구 후암로49길 7-6 2층, 서울역 인근)</p>
-  <p class="muted">한 팀 단독 대관 파티룸 — 바베큐와 함께 백그라운드 게임(비밀미션·마니또·예언) 공개 3연타로 마무리하기 좋아요. 주차 가능.</p>
+  <p class="muted">한 팀 단독 대관 파티룸 — 바베큐와 함께 백그라운드 게임(마니또·예언) 공개 마무리로 마무리하기 좋아요. 주차 가능.</p>
 
   <h2>추천 타임라인 — 1부 게임 (총 90분 기준)</h2>
   <ul class="timeline">
     <li><span class="t">사전</span><span><b>TMI 수집</b> — 워크숍 2~3일 전 슬랙에 링크 공유</span></li>
     <li><span class="t">00:00</span><span><b>아이스브레이킹</b> — 슬랙 공지에 가장 먼저 댓글 단 사람 소개/상품</span></li>
-    <li><span class="t">00:05</span><span><b>🥷 비밀미션 + 💌 마니또 + 🔮 예언 봉인</b> — 하루 종일 백그라운드로 진행, 마무리 때 공개</span></li>
+    <li><span class="t">00:05</span><span><b>💌 마니또 + 🔮 예언 봉인</b> — 하루 종일 백그라운드로 진행, 마무리 때 공개</span></li>
     <li><span class="t">00:10</span><span><b>🎯 빙고</b> (25분) — 돌아다니며 서로 확인하는 시간을 주면 자연스럽게 섞여요</span></li>
     <li><span class="t">00:35</span><span><b>🤫 TMI 주인 찾기</b> (25분) — 주인공 인터뷰 포함</span></li>
     <li><span class="t">01:00</span><span><b>⚡ 퀴즈</b> (15분) — 회사 내부 문제 5~8개</span></li>

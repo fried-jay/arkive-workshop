@@ -1,14 +1,21 @@
 :root {
-  --bg: #f6f7fb;
+  --bg: #f4f5f9;
   --card: #ffffff;
-  --text: #1c2333;
-  --muted: #6b7280;
-  --accent: #4f46e5;
-  --accent-soft: #eef2ff;
-  --marked: #4f46e5;
+  --text: #171b26;
+  --muted: #737a8a;
+  --accent: #5b53e8;
+  --accent-2: #7d76f0;
+  --accent-soft: #eeecfe;
+  --marked: #5b53e8;
   --marked-text: #ffffff;
   --gold: #f59e0b;
-  --border: #e5e7eb;
+  --ok: #16a34a;
+  --danger: #dc2626;
+  --border: #e7e9f0;
+  --radius: 18px;
+  --radius-sm: 12px;
+  --shadow: 0 2px 10px rgba(23, 27, 38, 0.05);
+  --shadow-lift: 0 6px 22px rgba(91, 83, 232, 0.14);
 }
 
 * { box-sizing: border-box; }
@@ -18,52 +25,186 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", sans-serif;
   background: var(--bg);
   color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
 }
 
-.wrap { max-width: 560px; margin: 0 auto; padding: 16px; }
+.wrap { max-width: 560px; margin: 0 auto; padding: 20px 16px 48px; }
+
+/* ---- 헤더 ---- */
+.page-head { margin: 8px 2px 20px; }
+.page-head h1 { font-size: 1.5rem; margin: 0 0 4px; letter-spacing: -0.02em; }
+.page-head .muted { font-size: 0.92rem; }
 
 .card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: var(--shadow);
 }
+.card + .card { margin-top: 14px; }
 
-h1 { font-size: 1.4rem; margin: 0 0 4px; }
+h1 { font-size: 1.4rem; margin: 0 0 6px; letter-spacing: -0.02em; }
+h2 { font-size: 1.05rem; margin: 0 0 10px; letter-spacing: -0.01em; }
 .muted { color: var(--muted); font-size: 0.9rem; }
 
+/* ---- 버튼 ---- */
 .btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   border: none;
-  border-radius: 12px;
-  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  padding: 13px 20px;
   font-size: 1rem;
   font-weight: 700;
   background: var(--accent);
   color: #fff;
   cursor: pointer;
   text-decoration: none;
+  transition: transform .06s ease, filter .15s ease, box-shadow .15s ease;
 }
-.btn:active { transform: scale(0.98); }
+.btn:hover { filter: brightness(1.05); }
+.btn:active { transform: scale(0.97); }
 .btn.secondary { background: var(--accent-soft); color: var(--accent); }
+.btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn.small { padding: 9px 14px; font-size: 0.9rem; white-space: nowrap; }
+.btn.block { width: 100%; }
 
+/* ---- 입력 ---- */
 input[type="text"], textarea {
   width: 100%;
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: var(--radius-sm);
+  padding: 13px;
   font-size: 1rem;
   font-family: inherit;
+  background: #fbfbfe;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+input[type="text"]:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
+/* ---- 참가자 허브: 타일 그리드 ---- */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 4px;
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 16px;
+  text-decoration: none;
+  color: var(--text);
+  box-shadow: var(--shadow);
+  transition: transform .08s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-lift); border-color: var(--accent-2); }
+.tile:active { transform: scale(0.98); }
+.tile .emoji { font-size: 1.9rem; line-height: 1; }
+.tile .t-name { font-weight: 800; font-size: 1.02rem; letter-spacing: -0.01em; }
+.tile .t-sub { color: var(--muted); font-size: 0.8rem; }
+
+/* ---- 역할 탭 (스태프 콘솔) ---- */
+.role-tabs {
+  display: flex;
+  gap: 6px;
+  background: #eceef4;
+  border-radius: 14px;
+  padding: 5px;
+  margin: 4px 0 20px;
+}
+.role-tabs button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  padding: 11px 8px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, box-shadow .15s ease;
+}
+.role-tabs button.active {
+  background: var(--card);
+  color: var(--accent);
+  box-shadow: var(--shadow);
+}
+
+/* ---- 게임 행 (콘솔) ---- */
+.game-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--row-color, var(--accent));
+  border-radius: var(--radius-sm);
+  padding: 15px 16px;
+  margin: 10px 0;
+  box-shadow: var(--shadow);
+}
+.game-row .name { font-weight: 700; font-size: 1.02rem; }
+.game-row .desc { color: var(--muted); font-size: 0.82rem; margin-top: 2px; }
+.game-row .row-actions { display: flex; gap: 8px; }
+@media (max-width: 480px) {
+  .game-row { grid-template-columns: 1fr; }
+  .game-row .row-actions { }
+}
+
+.section-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  text-transform: none;
+  margin: 22px 2px 8px;
+}
+
+/* ---- 상태/피드백 ---- */
+.status-box {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  font-weight: 700;
+}
+.actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+.ok { color: var(--ok); font-size: 0.9rem; min-height: 1.2em; margin-top: 8px; }
+.error { color: var(--danger); font-size: 0.9rem; min-height: 1.2em; margin-top: 8px; }
+.hidden { display: none; }
+
+.hub-foot {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+.hub-foot a { color: var(--muted); font-size: 0.9rem; text-decoration: none; font-weight: 600; }
+.hub-foot a:hover { color: var(--accent); }
+
+/* ---- 빙고 그리드 (기존 유지) ---- */
 .grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 6px;
   margin-top: 16px;
 }
-
 .cell {
   aspect-ratio: 1;
   border: 1px solid var(--border);
@@ -81,14 +222,15 @@ input[type="text"], textarea {
   cursor: pointer;
   font-family: inherit;
   color: var(--text);
+  transition: transform .06s ease;
 }
+.cell:active { transform: scale(0.96); }
 .cell.marked {
   background: var(--marked);
   border-color: var(--marked);
   color: var(--marked-text);
   font-weight: 700;
 }
-
 .statusbar {
   display: flex;
   justify-content: space-between;
@@ -97,5 +239,30 @@ input[type="text"], textarea {
   font-weight: 700;
 }
 .bingo-count { color: var(--accent); }
-.error { color: #dc2626; font-size: 0.9rem; min-height: 1.2em; margin-top: 8px; }
-.hidden { display: none; }
+
+/* ---- 진행자 실시간 로스터 (모든 게임 admin 공용) ---- */
+.roster { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.roster li {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 9px 13px; border: 1px solid var(--border); border-radius: 10px;
+  background: var(--card); font-weight: 700;
+}
+.roster .right { display: flex; align-items: center; gap: 12px; }
+.roster .st { font-weight: 700; font-size: 0.85rem; }
+.roster .st.done { color: var(--ok); }
+.roster .st.wait { color: var(--muted); }
+.roster .st.bad { color: var(--danger); }
+.roster .sc { color: var(--accent); font-variant-numeric: tabular-nums; font-size: 0.9rem; }
+.roster-empty { color: var(--muted); font-weight: 500; padding: 12px 2px; }
+.roster-head { font-size: 0.82rem; font-weight: 800; color: var(--muted); margin: 16px 2px 2px; }
+
+/* ---- 등록된 참가자 선택(입장) ---- */
+.name-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:8px; margin-top:12px; }
+.name-btn {
+  border:1px solid var(--border); background:var(--card); border-radius:12px; padding:12px 8px;
+  font-size:0.98rem; font-weight:700; color:var(--text); cursor:pointer; font-family:inherit;
+  transition:transform .06s ease, border-color .15s ease, background .15s ease;
+}
+.name-btn:hover { border-color:var(--accent-2); background:var(--accent-soft); }
+.name-btn:active { transform:scale(0.96); }
+#roster-filter { margin-bottom:2px; }

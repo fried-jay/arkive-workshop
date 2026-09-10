@@ -2,16 +2,16 @@
 const path = require('node:path');
 const express = require('express');
 const {
-  createGame, setItems, joinGame, markCell, resetGame,
+  createGame, setItems, joinGame, reshuffle, setReady, startGame, markCell, resetGame, clearBingoParticipants,
   publicSnapshot, participantView,
 } = require('./lib/game');
 const {
   createQuiz, setQuestions, joinQuiz, openNext, answerQuestion,
-  reveal, resetQuiz, quizSnapshot, quizParticipantView,
+  reveal, resetQuiz, clearQuizParticipants, quizSnapshot, quizParticipantView,
 } = require('./lib/quiz');
 const {
   createBalance, setRounds, joinBalance, openNextRound, voteBalance,
-  revealBalance, resetBalance, balanceSnapshot, balanceParticipantView,
+  revealBalance, resetBalance, clearBalanceParticipants, balanceSnapshot, balanceParticipantView,
 } = require('./lib/balance');
 const {
   createTmi, submitTmi, startTmi, advanceTmi,
@@ -22,10 +22,6 @@ const {
   submitGuess, revealRound, resetCatchmind, catchmindSnapshot, catchmindParticipantView,
 } = require('./lib/catchmind');
 const {
-  createMission, setMissions, joinMission, startMission, reportDone, accuse,
-  revealMission, resetMission, missionSnapshot, missionParticipantView,
-} = require('./lib/mission');
-const {
   createManito, joinManito, setNote, startManito, guessManito,
   revealManito, resetManito, manitoSnapshot, manitoParticipantView,
 } = require('./lib/manito');
@@ -33,6 +29,10 @@ const {
   createProphecy, submitProphecy, sealProphecy, revealProphecy, markHit,
   resetProphecy, prophecySnapshot, prophecyParticipantView,
 } = require('./lib/prophecy');
+const {
+  createHidden, generateRounds, setRounds: setHiddenRounds, joinHidden, startHidden, nextRound: nextHidden,
+  tapHidden, resetHidden, clearHiddenParticipants, hiddenSnapshot, hiddenParticipantView,
+} = require('./lib/hidden');
 const { loadState, createSaver } = require('./lib/persist');
 
 const ERROR_STATUS = {
@@ -40,6 +40,11 @@ const ERROR_STATUS = {
   ITEMS_NOT_SET: 400,
   ITEMS_INVALID: 400,
   CELL_INVALID: 400,
+  NOT_STARTED: 409,
+  ALREADY_STARTED: 409,
+  ALREADY_READY: 409,
+  NO_PARTICIPANTS: 400,
+  HIDDEN_NOT_READY: 409,
   QUESTIONS_INVALID: 400,
   CHOICE_INVALID: 400,
   ROUNDS_INVALID: 400,
@@ -72,18 +77,18 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
   balanceDataFile ??= path.join(dir, 'balance-data.json');
   tmiDataFile ??= path.join(dir, 'tmi-data.json');
   catchmindDataFile ??= path.join(dir, 'catchmind-data.json');
-  const missionDataFile = path.join(dir, 'mission-data.json');
   const manitoDataFile = path.join(dir, 'manito-data.json');
   const prophecyDataFile = path.join(dir, 'prophecy-data.json');
+  const hiddenDataFile = path.join(dir, 'hidden-data.json');
 
   const game = loadState(dataFile) ?? createGame();
   const quiz = loadState(quizDataFile) ?? createQuiz();
   const balance = loadState(balanceDataFile) ?? createBalance();
   const tmi = reviveTmi(loadState(tmiDataFile)) ?? createTmi();
   const catchmind = loadState(catchmindDataFile) ?? createCatchmind();
-  const mission = loadState(missionDataFile) ?? createMission();
   const manito = loadState(manitoDataFile) ?? createManito();
   const prophecy = loadState(prophecyDataFile) ?? createProphecy();
+  const hidden = loadState(hiddenDataFile) ?? createHidden();
 
   const app = express();
   app.use(express.json({ limit: '2mb' })); // 캐치마인드 그림 제출용 여유
@@ -115,9 +120,9 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
   const broadcastBalance = createSseChannel('/api/balance/events', balance, balanceDataFile, balanceSnapshot);
   const broadcastTmi = createSseChannel('/api/tmi/events', tmi, tmiDataFile, tmiSnapshot);
   const broadcastCatchmind = createSseChannel('/api/catchmind/events', catchmind, catchmindDataFile, catchmindSnapshot);
-  const broadcastMission = createSseChannel('/api/mission/events', mission, missionDataFile, missionSnapshot);
   const broadcastManito = createSseChannel('/api/manito/events', manito, manitoDataFile, manitoSnapshot);
   const broadcastProphecy = createSseChannel('/api/prophecy/events', prophecy, prophecyDataFile, prophecySnapshot);
+  const broadcastHidden = createSseChannel('/api/hidden/events', hidden, hiddenDataFile, hiddenSnapshot);
 
   function handle(res, fn) {
     try {
@@ -153,7 +158,26 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
     res.json(participantView(game, p.id));
   }));
 
+  app.post('/api/shuffle', (req, res) => handle(res, () => {
+    const p = reshuffle(game, req.body?.participantId);
+    broadcast();
+    res.json(participantView(game, p.id));
+  }));
+
+  app.post('/api/ready', (req, res) => handle(res, () => {
+    const { participantId, ready } = req.body ?? {};
+    const p = setReady(game, participantId, ready);
+    broadcast();
+    res.json(participantView(game, p.id));
+  }));
+
   app.get('/api/state', (_req, res) => res.json(publicSnapshot(game)));
+
+  app.post('/api/admin/start', (_req, res) => handle(res, () => {
+    startGame(game);
+    broadcast();
+    res.json({ ok: true });
+  }));
 
   app.post('/api/admin/items', (req, res) => handle(res, () => {
     setItems(game, req.body?.items);
@@ -163,6 +187,12 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
 
   app.post('/api/admin/reset', (_req, res) => handle(res, () => {
     resetGame(game);
+    broadcast();
+    res.json({ ok: true });
+  }));
+
+  app.post('/api/admin/clear-participants', (_req, res) => handle(res, () => {
+    clearBingoParticipants(game);
     broadcast();
     res.json({ ok: true });
   }));
@@ -192,7 +222,7 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
   }));
 
   for (const [route, action] of [
-    ['next', openNext], ['reveal', reveal], ['reset', resetQuiz],
+    ['next', openNext], ['reveal', reveal], ['reset', resetQuiz], ['clear-participants', clearQuizParticipants],
   ]) {
     app.post(`/api/quiz/admin/${route}`, (_req, res) => handle(res, () => {
       action(quiz);
@@ -226,7 +256,7 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
   }));
 
   for (const [route, action] of [
-    ['next', openNextRound], ['reveal', revealBalance], ['reset', resetBalance],
+    ['next', openNextRound], ['reveal', revealBalance], ['reset', resetBalance], ['clear-participants', clearBalanceParticipants],
   ]) {
     app.post(`/api/balance/admin/${route}`, (_req, res) => handle(res, () => {
       action(balance);
@@ -307,47 +337,6 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
     }));
   }
 
-  // ---------- 비밀미션 ----------
-  app.post('/api/mission/join', (req, res) => handle(res, () => {
-    const p = joinMission(mission, req.body?.name);
-    broadcastMission();
-    res.json(missionParticipantView(mission, p.id));
-  }));
-
-  meRoute('/api/mission/me/:participantId', mission, missionParticipantView);
-
-  app.get('/api/mission/state', (_req, res) => res.json(missionSnapshot(mission)));
-
-  app.post('/api/mission/report', (req, res) => handle(res, () => {
-    const p = reportDone(mission, req.body?.participantId);
-    broadcastMission();
-    res.json(missionParticipantView(mission, p.id));
-  }));
-
-  app.post('/api/mission/accuse', (req, res) => handle(res, () => {
-    const { participantId, targetName, missionIndex } = req.body ?? {};
-    const target = mission.participants.find((p) => p.name === targetName);
-    const result = accuse(mission, participantId, target?.id ?? 'unknown', missionIndex);
-    broadcastMission();
-    res.json(result);
-  }));
-
-  app.post('/api/mission/admin/missions', (req, res) => handle(res, () => {
-    setMissions(mission, req.body?.missions);
-    broadcastMission();
-    res.json({ ok: true });
-  }));
-
-  for (const [route, action] of [
-    ['start', startMission], ['reveal', revealMission], ['reset', resetMission],
-  ]) {
-    app.post(`/api/mission/admin/${route}`, (_req, res) => handle(res, () => {
-      action(mission);
-      broadcastMission();
-      res.json({ ok: true });
-    }));
-  }
-
   // ---------- 마니또 ----------
   app.post('/api/manito/join', (req, res) => handle(res, () => {
     const p = joinManito(manito, req.body?.name);
@@ -413,7 +402,56 @@ function createServer({ dataFile, quizDataFile, balanceDataFile, tmiDataFile, ca
     }));
   }
 
-  return { app, game, quiz, balance, tmi, catchmind, mission, manito, prophecy };
+
+  // ---------- 숨은그림찾기 ----------
+  app.post('/api/hidden/join', (req, res) => handle(res, () => {
+    const p = joinHidden(hidden, req.body?.name);
+    broadcastHidden();
+    res.json(hiddenParticipantView(hidden, p.id));
+  }));
+
+  meRoute('/api/hidden/me/:participantId', hidden, hiddenParticipantView);
+
+  app.get('/api/hidden/state', (_req, res) => res.json(hiddenSnapshot(hidden)));
+
+  app.post('/api/hidden/tap', (req, res) => handle(res, () => {
+    const { participantId, cellIndex } = req.body ?? {};
+    const result = tapHidden(hidden, participantId, cellIndex);
+    broadcastHidden();
+    res.json(result);
+  }));
+
+  app.post('/api/hidden/admin/generate', (req, res) => handle(res, () => {
+    setHiddenRounds(hidden, generateRounds(req.body?.count));
+    broadcastHidden();
+    res.json({ ok: true, rounds: hidden.rounds.length });
+  }));
+
+  app.post('/api/hidden/admin/start', (_req, res) => handle(res, () => {
+    startHidden(hidden);
+    broadcastHidden();
+    res.json({ ok: true });
+  }));
+
+  app.post('/api/hidden/admin/next', (_req, res) => handle(res, () => {
+    nextHidden(hidden);
+    broadcastHidden();
+    res.json({ ok: true });
+  }));
+
+  app.post('/api/hidden/admin/reset', (_req, res) => handle(res, () => {
+    resetHidden(hidden);
+    broadcastHidden();
+    res.json({ ok: true });
+  }));
+
+  app.post('/api/hidden/admin/clear-participants', (_req, res) => handle(res, () => {
+    clearHiddenParticipants(hidden);
+    broadcastHidden();
+    res.json({ ok: true });
+  }));
+
+  return { app, game, quiz, balance, tmi, catchmind, manito, prophecy, hidden };
 }
 
 module.exports = { createServer };

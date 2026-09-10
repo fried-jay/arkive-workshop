@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>숨은그림찾기 관리자</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="page-head">
+      <h1>🔍 숨은그림찾기 관리자</h1>
+      <p class="muted"><b>① 준비</b>에서 라운드를 생성하고, <b>② 진행</b>에서 시작·다음 라운드를 넘기세요.</p>
+    </div>
+
+    <section class="card">
+      <h2>① 준비 · 라운드 생성</h2>
+      <p class="muted">라운드 수를 정해 자동 생성합니다. 라운드마다 배경 이모지 속에 숨은 그림이 배치돼요.</p>
+      <div class="actions">
+        <label class="muted">라운드 수
+          <input type="number" id="count" value="5" min="1" max="12" style="width:70px;display:inline-block;margin-left:6px;">
+        </label>
+        <button class="btn" id="gen-btn">🎲 라운드 생성</button>
+      </div>
+      <p class="ok" id="ok-msg"></p>
+      <p class="error" id="error-msg"></p>
+    </section>
+
+    <section class="card">
+      <h2>② 진행</h2>
+      <div class="status-box" id="status-box">상태 불러오는 중...</div>
+      <div class="roster-head">👥 참가자 실시간</div>
+      <ul class="roster" id="roster"></ul>
+      <div class="actions">
+        <button class="btn" id="start-btn">🚀 시작</button>
+        <button class="btn" id="next-btn">▶ 다음 라운드</button>
+        <button class="btn secondary" id="reset-btn">🔄 진행 리셋 (참가자 유지)</button>
+        <button class="btn ghost" id="clear-btn">👥 참가자 리셋 (라운드 유지)</button>
+        <a class="btn secondary" href="/hidden-board.html" target="_blank">📺 현황판</a>
+      </div>
+    </section>
+  </div>
+  <script src="/admin-roster.js"></script>
+  <script src="/hidden-admin.js"></script>
+</body>
+</html>

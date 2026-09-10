@@ -13,17 +13,36 @@
 </head>
 <body>
   <div class="wrap">
+    <div class="page-head">
+      <h1>🎯 빙고 관리자</h1>
+      <p class="muted"><b>① 준비</b>에서 항목을 등록하고, <b>② 진행</b>에서 전원 레디를 확인해 게임을 시작하세요.</p>
+    </div>
+
     <section class="card">
-      <h1>🛠️ 빙고 관리자</h1>
-      <p class="muted">빙고 항목을 한 줄에 하나씩, 정확히 25개 입력하세요. 저장 후에는 <b>게임 리셋</b>을 눌러야 참가자들이 새 항목으로 시작해요.</p>
+      <h2>① 준비 · 항목 등록</h2>
+      <p class="muted">빙고 항목을 한 줄에 하나씩, 정확히 25개 입력하세요. 저장 후 <b>게임 리셋</b>을 눌러야 참가자들이 새 항목으로 시작해요.</p>
       <textarea id="items-input" placeholder="예) 아침형 인간이다&#10;MBTI가 E로 시작한다&#10;..."></textarea>
       <p class="muted" id="line-count"></p>
       <div class="actions">
         <button class="btn" id="save-btn">항목 저장</button>
-        <button class="btn secondary" id="reset-btn">게임 리셋 (참가자 전원 초기화)</button>
+        <button class="btn secondary" id="reset-btn">🔄 판 리셋 (참가자 유지)</button>
+        <button class="btn ghost" id="clear-btn">👥 참가자 리셋 (항목 유지)</button>
       </div>
       <p class="ok" id="ok-msg"></p>
       <p class="error" id="error-msg"></p>
+    </section>
+
+    <section class="card">
+      <h2>② 진행 · 시작</h2>
+      <div class="status-box" id="live-status">현황 불러오는 중...</div>
+      <div class="actions">
+        <button class="btn" id="start-btn" disabled>🚀 게임 시작</button>
+        <button class="btn ghost" id="force-start-btn">대기 없이 바로 시작</button>
+        <a class="btn secondary" href="/board.html" target="_blank">📺 현황판 열기</a>
+      </div>
+      <ul id="roster" style="list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;"></ul>
+      <p class="ok" id="start-ok"></p>
+      <p class="error" id="start-error"></p>
     </section>
   </div>
   <script src="/admin.js"></script>

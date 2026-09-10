@@ -102,12 +102,20 @@ test('퀴즈 전체 흐름: 문제 등록 → join → next → answer → revea
   stateRes = await fetch(`${base}/api/quiz/state`);
   assert.equal((await stateRes.json()).status, 'finished');
 
-  // reset
+  // 진행 리셋: 점수·진행은 초기화되고 참가자·문제는 유지
   res = await post(base, '/api/quiz/admin/reset');
   assert.equal(res.status, 200);
   stateRes = await fetch(`${base}/api/quiz/state`);
   snap = await stateRes.json();
   assert.equal(snap.status, 'idle');
+  assert.equal(snap.participants.length, 1);
+  assert.equal(snap.participants[0].score, 0);
+  assert.equal(snap.totalQuestions, 2);
+
+  // 참가자 리셋: 참가자만 제거, 문제 유지
+  res = await post(base, '/api/quiz/admin/clear-participants');
+  assert.equal(res.status, 200);
+  snap = await (await fetch(`${base}/api/quiz/state`)).json();
   assert.equal(snap.participants.length, 0);
   assert.equal(snap.totalQuestions, 2);
 });

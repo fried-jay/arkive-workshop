@@ -67,6 +67,12 @@ test('밸런스 흐름: rounds → join → vote → reveal 점수/분포', asyn
   assert.equal(me.score, 10);
   await post(base, '/api/balance/admin/reset');
   snap = await state(base, '/api/balance/state');
+  assert.equal(snap.participants.length, 2);   // 참가자 유지
+  assert.ok(snap.participants.every((p) => p.score === 0)); // 점수 초기화
+  assert.equal(snap.totalRounds, 1);
+
+  await post(base, '/api/balance/admin/clear-participants');
+  snap = await state(base, '/api/balance/state');
   assert.equal(snap.participants.length, 0);
   assert.equal(snap.totalRounds, 1);
 });

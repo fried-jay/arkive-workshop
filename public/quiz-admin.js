@@ -3,6 +3,7 @@
 const input = document.getElementById('questions-input');
 const parseInfo = document.getElementById('parse-info');
 const statusBox = document.getElementById('status-box');
+const roster = document.getElementById('roster');
 const okMsg = document.getElementById('ok-msg');
 const errorMsg = document.getElementById('error-msg');
 
@@ -68,6 +69,17 @@ function renderStatus(snap) {
     ? ` (문제 ${snap.currentIndex + 1}/${snap.totalQuestions}, 응답 ${snap.answeredCount}/${snap.participants.length})`
     : ` (등록된 문제 ${snap.totalQuestions}개, 참가자 ${snap.participants.length}명)`;
   statusBox.textContent = (STATUS_LABEL[snap.status] || snap.status) + where;
+
+  const active = snap.status === 'question' || snap.status === 'revealed';
+  const rows = [...snap.participants]
+    .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, 'ko'))
+    .map((p) => ({
+      name: p.name,
+      score: p.score,
+      status: active ? (p.answered ? '✅ 응답' : '⏳ 대기') : null,
+      statusClass: p.answered ? 'done' : 'wait',
+    }));
+  renderRoster(roster, rows);
 }
 
 document.getElementById('save-btn').addEventListener('click', async () => {
@@ -77,7 +89,7 @@ document.getElementById('save-btn').addEventListener('click', async () => {
     flash(errorMsg, problem);
     return;
   }
-  if (!confirm(`문제 ${questions.length}개를 등록합니다. 기존 진행/참가자는 초기화돼요. 계속할까요?`)) return;
+  if (!confirm(`문제 ${questions.length}개를 등록합니다. 진행/점수는 초기화되고 참가자는 유지돼요. 계속할까요?`)) return;
   try {
     await post('/api/quiz/admin/questions', { questions });
     flash(okMsg, `문제 ${questions.length}개 등록 완료!`);
@@ -106,7 +118,7 @@ for (const [id, url, label] of [
 }
 
 document.getElementById('reset-btn').addEventListener('click', async () => {
-  if (!confirm('참가자와 점수가 모두 초기화됩니다. (문제는 유지) 리셋할까요?')) return;
+  if (!confirm('점수·진행을 초기화할까요? (문제·참가자는 유지)')) return;
   try {
     await post('/api/quiz/admin/reset');
     flash(okMsg, '리셋 완료!');
@@ -114,6 +126,17 @@ document.getElementById('reset-btn').addEventListener('click', async () => {
     flash(errorMsg, '리셋에 실패했어요.');
   }
 });
+
+document.getElementById('clear-btn').addEventListener('click', async () => {
+  if (!confirm('등록된 참가자를 모두 제거할까요? (문제 유지)')) return;
+  try {
+    await post('/api/quiz/admin/clear-participants');
+    flash(okMsg, '참가자를 초기화했어요. (문제 유지)');
+  } catch {
+    flash(errorMsg, '참가자 리셋에 실패했어요.');
+  }
+});
+
 
 function connect() {
   const source = new EventSource('/api/quiz/events');

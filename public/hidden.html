@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>숨은그림찾기</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .hgrid { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-top:14px; }
+    .hcell { aspect-ratio:1; border:1px solid var(--border); border-radius:10px; background:var(--card);
+      font-size:clamp(1.1rem,7vw,1.8rem); display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; }
+    .hcell.found { background:var(--accent); border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-soft) inset; }
+    .target-banner { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:12px;
+      padding:14px; border-radius:var(--radius-sm); background:var(--accent-soft); color:var(--accent); font-weight:800; }
+    .target-banner .big { font-size:1.6rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section id="join-view" class="card">
+      <h1>🔍 숨은그림찾기</h1>
+      <p class="muted">본인 이름을 선택해 입장하세요. 화면 속 숨은 그림을 먼저 찾는 사람이 점수를 얻어요!</p>
+      <input type="text" id="roster-filter" placeholder="이름 검색" autocomplete="off">
+      <div id="roster-list" class="name-grid"></div>
+      <p class="error" id="join-error"></p>
+    </section>
+
+    <section id="wait-view" class="card hidden">
+      <h1 id="wait-title">🔍 숨은그림찾기</h1>
+      <p class="muted" id="wait-msg">진행자가 시작하길 기다리는 중...</p>
+    </section>
+
+    <section id="play-view" class="card hidden">
+      <div class="target-banner">
+        <span>이 그림을 모두 찾으세요!</span>
+        <span class="big" id="target-emoji"></span>
+      </div>
+      <div class="statusbar"><span id="progress"></span><span class="bingo-count" id="my-score"></span></div>
+      <div class="hgrid" id="grid"></div>
+      <p class="error" id="play-error"></p>
+    </section>
+  </div>
+  <script src="/roster-join.js"></script>
+  <script src="/hidden.js"></script>
+</body>
+</html>

@@ -131,16 +131,20 @@ function connect() {
   };
 }
 
-document.getElementById('join-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  joinError.textContent = '';
-  try {
-    me = await api('POST', '/api/quiz/join', { name: document.getElementById('name-input').value });
-    localStorage.setItem('quiz:participantId', me.participantId);
-    render();
-  } catch (err) {
-    joinError.textContent = messageFor(err.message);
-  }
+setupRosterJoin({
+  stateUrl: '/api/quiz/state',
+  listEl: document.getElementById('roster-list'),
+  filterEl: document.getElementById('roster-filter'),
+  onPick: async (pickedName) => {
+    joinError.textContent = '';
+    try {
+      me = await api('POST', '/api/quiz/join', { name: pickedName });
+      localStorage.setItem('quiz:participantId', me.participantId);
+      render();
+    } catch (err) {
+      joinError.textContent = messageFor(err.message);
+    }
+  },
 });
 
 (async function init() {

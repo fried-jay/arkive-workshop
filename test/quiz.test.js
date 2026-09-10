@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const {
   createQuiz, setQuestions, joinQuiz, openNext, answerQuestion,
-  reveal, resetQuiz, quizSnapshot, quizParticipantView,
+  reveal, resetQuiz, clearQuizParticipants, quizSnapshot, quizParticipantView,
 } = require('../lib/quiz');
 
 const QUESTIONS = [
@@ -25,14 +25,16 @@ test('setQuestions: 검증 — 빈 배열/보기 부족/정답 인덱스 범위 
   assert.throws(() => setQuestions(quiz, [{ text: '  ', choices: ['a', 'b'], answerIndex: 0 }]), /QUESTIONS_INVALID/);
 });
 
-test('setQuestions: 등록하면 진행 상태/참가자 초기화', () => {
+test('setQuestions: 등록하면 진행/점수는 초기화, 참가자는 유지', () => {
   const quiz = readyQuiz();
-  joinQuiz(quiz, '원');
+  const p = joinQuiz(quiz, '원');
   openNext(quiz);
+  p.score = 50;
   setQuestions(quiz, QUESTIONS);
   assert.equal(quiz.status, 'idle');
   assert.equal(quiz.currentIndex, -1);
-  assert.equal(quiz.participants.length, 0);
+  assert.equal(quiz.participants.length, 1);
+  assert.equal(quiz.participants[0].score, 0);
 });
 
 test('joinQuiz: 빈 이름 거부, 같은 이름은 기존 참가자 반환', () => {
@@ -113,13 +115,23 @@ test('reveal: 점수는 문제마다 누적', () => {
   assert.equal(p.score, 260); // 130 + 130
 });
 
-test('resetQuiz: 참가자/진행 초기화, 문제 유지', () => {
+test('resetQuiz: 진행/점수 초기화, 참가자·문제 유지', () => {
   const quiz = readyQuiz();
-  joinQuiz(quiz, '원');
+  const p = joinQuiz(quiz, '원');
   openNext(quiz);
+  p.score = 30;
   resetQuiz(quiz);
   assert.equal(quiz.status, 'idle');
   assert.equal(quiz.currentIndex, -1);
+  assert.equal(quiz.participants.length, 1);
+  assert.equal(quiz.participants[0].score, 0);
+  assert.equal(quiz.questions.length, 2);
+});
+
+test('clearQuizParticipants: 참가자만 제거, 문제 유지', () => {
+  const quiz = readyQuiz();
+  joinQuiz(quiz, '원');
+  clearQuizParticipants(quiz);
   assert.equal(quiz.participants.length, 0);
   assert.equal(quiz.questions.length, 2);
 });

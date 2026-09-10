@@ -50,10 +50,31 @@ test('전체 흐름: items 설정 → join → mark → state', async (t) => {
   res = await post(base, '/api/join', { name: '  ' });
   assert.equal(res.status, 400);
 
-  // mark
+  // 시작 전에는 칠할 수 없음
+  res = await post(base, '/api/mark', { participantId, cellIndex: 0, on: true });
+  assert.equal(res.status, 409);
+  assert.equal(res.body.error, 'NOT_STARTED');
+
+  // 다시 섞기 + 레디
+  res = await post(base, '/api/shuffle', { participantId });
+  assert.equal(res.status, 200);
+  assert.equal(res.body.cells.length, 25);
+  res = await post(base, '/api/ready', { participantId, ready: true });
+  assert.equal(res.status, 200);
+  assert.equal(res.body.ready, true);
+  // 레디 상태에서는 다시 섞기 거부
+  res = await post(base, '/api/shuffle', { participantId });
+  assert.equal(res.status, 409);
+
+  // 진행자 시작
+  res = await post(base, '/api/admin/start');
+  assert.equal(res.status, 200);
+
+  // mark (시작 후)
   res = await post(base, '/api/mark', { participantId, cellIndex: 0, on: true });
   assert.equal(res.status, 200);
   assert.equal(res.body.marked[0], true);
+  assert.equal(res.body.started, true);
 
   res = await post(base, '/api/mark', { participantId: 'nope', cellIndex: 0, on: true });
   assert.equal(res.status, 404);
@@ -71,13 +92,22 @@ test('전체 흐름: items 설정 → join → mark → state', async (t) => {
   getRes = await fetch(`${base}/api/state`);
   const snap = await getRes.json();
   assert.equal(snap.itemsSet, true);
-  assert.deepEqual(snap.participants[0], { name: '원', markedCount: 1, bingoLines: 0 });
+  assert.equal(snap.started, true);
+  assert.deepEqual(snap.participants[0], { name: '원', ready: true, markedCount: 1, bingoLines: 0 });
 
-  // reset
+  // 진행 리셋: 참가자 유지, 판 초기화
   res = await post(base, '/api/admin/reset');
   assert.equal(res.status, 200);
   getRes = await fetch(`${base}/api/state`);
-  assert.equal((await getRes.json()).participants.length, 0);
+  let snap2 = await getRes.json();
+  assert.equal(snap2.participants.length, 1);
+  assert.equal(snap2.started, false);
+
+  // 참가자 리셋: 참가자만 제거
+  res = await post(base, '/api/admin/clear-participants');
+  assert.equal(res.status, 200);
+  snap2 = await (await fetch(`${base}/api/state`)).json();
+  assert.equal(snap2.participants.length, 0);
 });
 
 test('SSE: 연결 즉시 스냅샷 push', async (t) => {

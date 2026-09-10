@@ -30,6 +30,8 @@
       <h1>🛠️ 몰래 예언 관리자</h1>
       <p class="muted">워크숍 시작 직후 <b>봉인</b>하세요 (늦게 내면 이미 일어난 일을 적는 반칙 가능!). 마무리에 <b>대공개</b> 후, 하나씩 읽으며 다 같이 판정하고 아래에서 ⭕/❌를 눌러주세요.</p>
       <div class="status-box" id="status-box">상태 불러오는 중...</div>
+      <div class="roster-head">👥 참가자 실시간</div>
+      <ul class="roster" id="roster"></ul>
       <div class="actions">
         <button class="btn" id="seal-btn">🔒 봉인 (제출 마감)</button>
         <button class="btn" id="reveal-btn">🔮 대공개</button>
@@ -40,6 +42,7 @@
       <p class="error" id="error-msg"></p>
     </section>
   </div>
+  <script src="/admin-roster.js"></script>
   <script src="/prophecy-admin.js"></script>
 </body>
 </html>

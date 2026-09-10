@@ -44,18 +44,22 @@ ISTJ</pre>
       <textarea id="questions-input" placeholder="우리 회사 창립연도는?&#10;2019&#10;*2020&#10;2021&#10;2022&#10;&#10;다음 문제..."></textarea>
       <p class="muted" id="parse-info"></p>
       <div class="actions">
-        <button class="btn" id="save-btn">문제 등록 (진행 초기화)</button>
+        <button class="btn" id="save-btn">문제 등록</button>
       </div>
       <div class="status-box" id="status-box">상태 불러오는 중...</div>
+      <div class="roster-head">👥 참가자 실시간</div>
+      <ul class="roster" id="roster"></ul>
       <div class="actions">
         <button class="btn" id="next-btn">▶ 다음 문제</button>
         <button class="btn" id="reveal-btn">✅ 정답 공개</button>
-        <button class="btn secondary" id="reset-btn">게임 리셋</button>
+        <button class="btn secondary" id="reset-btn">🔄 진행 리셋 (참가자 유지)</button>
+        <button class="btn ghost" id="clear-btn">👥 참가자 리셋 (문제 유지)</button>
       </div>
       <p class="ok" id="ok-msg"></p>
       <p class="error" id="error-msg"></p>
     </section>
   </div>
+  <script src="/admin-roster.js"></script>
   <script src="/quiz-admin.js"></script>
 </body>
 </html>

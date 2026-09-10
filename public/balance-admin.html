@@ -23,18 +23,22 @@
       <textarea id="rounds-input" placeholder="평생 마라탕 vs 평생 김치찌개&#10;월요일 오전 회의 vs 금요일 야근"></textarea>
       <p class="muted" id="parse-info"></p>
       <div class="actions">
-        <button class="btn" id="save-btn">라운드 등록 (진행 초기화)</button>
+        <button class="btn" id="save-btn">라운드 등록</button>
       </div>
       <div class="status-box" id="status-box">상태 불러오는 중...</div>
+      <div class="roster-head">👥 참가자 실시간</div>
+      <ul class="roster" id="roster"></ul>
       <div class="actions">
         <button class="btn" id="next-btn">▶ 다음 라운드</button>
         <button class="btn" id="reveal-btn">✅ 결과 공개</button>
-        <button class="btn secondary" id="reset-btn">게임 리셋</button>
+        <button class="btn secondary" id="reset-btn">🔄 진행 리셋 (참가자 유지)</button>
+        <button class="btn ghost" id="clear-btn">👥 참가자 리셋 (라운드 유지)</button>
       </div>
       <p class="ok" id="ok-msg"></p>
       <p class="error" id="error-msg"></p>
     </section>
   </div>
+  <script src="/admin-roster.js"></script>
   <script src="/balance-admin.js"></script>
 </body>
 </html>

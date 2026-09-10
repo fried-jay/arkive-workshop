@@ -1,6 +1,7 @@
 'use strict';
 
 const statusBox = document.getElementById('status-box');
+const roster = document.getElementById('roster');
 const noteInput = document.getElementById('note-input');
 const okMsg = document.getElementById('ok-msg');
 const errorMsg = document.getElementById('error-msg');
@@ -34,6 +35,22 @@ function renderStatus(snap) {
     noteInput.value = snap.note || '';
     noteLoaded = true;
   }
+
+  let rows;
+  if (snap.status === 'revealed' && snap.scores) {
+    rows = [...snap.scores]
+      .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name, 'ko'))
+      .map((p) => ({ name: p.name, score: p.score }));
+  } else {
+    rows = [...snap.participants]
+      .sort((a, b) => a.name.localeCompare(b.name, 'ko'))
+      .map((p) => ({
+        name: p.name,
+        status: snap.status === 'running' ? (p.guessed ? '✅ 추측 완료' : '⏳ 대기') : null,
+        statusClass: p.guessed ? 'done' : 'wait',
+      }));
+  }
+  renderRoster(roster, rows);
 }
 
 document.getElementById('note-btn').addEventListener('click', async () => {
