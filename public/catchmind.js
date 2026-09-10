@@ -11,8 +11,14 @@ let current = null;
 let color = '#111827';
 let width = 5;
 
-// 이전에 입력한 이름 복원
-try { nameInput.value = localStorage.getItem('catchmind:name') || ''; } catch (e) {}
+// 개인화 링크(?name=)면 이름 자동 채움(고정), 아니면 이전 입력 복원
+const qName = new URLSearchParams(location.search).get('name');
+if (qName) {
+  nameInput.value = qName;
+  nameInput.readOnly = true;
+} else {
+  try { nameInput.value = localStorage.getItem('catchmind:name') || ''; } catch (e) {}
+}
 
 function redraw() {
   renderStrokes(canvas, current ? [...strokes, current] : strokes);
