@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>워크숍 사전 미션 — TMI 제출</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .steps { margin: 12px 0 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .steps li { display: flex; gap: 10px; align-items: flex-start; font-size: 0.95rem; }
+    .steps .n {
+      flex: 0 0 24px; height: 24px; border-radius: 50%;
+      background: var(--accent-soft); color: var(--accent);
+      font-weight: 800; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center;
+    }
+    .tip { background: var(--accent-soft); border-radius: 12px; padding: 12px 14px; font-size: 0.9rem; margin-top: 14px; }
+    .tip b { color: var(--accent); }
+    .tmi-inputs { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
+    .hint {
+      background: var(--accent-soft);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+    .hint .no { color: var(--accent); font-size: 0.8rem; display: block; font-weight: 700; margin-bottom: 2px; }
+    .hints { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+    .waiting { text-align: center; padding: 30px 0; }
+    .owner-reveal { text-align: center; font-size: 1.2rem; font-weight: 800; margin-top: 16px; color: #16a34a; }
+    .my-tmi { background: var(--bg); border-radius: 10px; padding: 10px 12px; margin-top: 12px; font-size: 0.9rem; }
+    .my-tmi ol { margin: 6px 0 0; padding-left: 20px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="page-head">
+      <h1>🤫 워크숍 사전 미션</h1>
+      <p class="muted">워크숍 전에 딱 하나만 부탁드려요. 나만 아는 <b>TMI 3개</b>!</p>
+    </div>
+
+    <section id="submit-view">
+      <div class="card">
+        <h2 style="margin-top:0">어떻게 쓰이나요?</h2>
+        <ol class="steps">
+          <li><span class="n">1</span><span>지금 여기서 이름과 TMI 3개를 제출해요.</span></li>
+          <li><span class="n">2</span><span>워크숍 당일, 누구 것인지 가린 채 TMI가 하나씩 힌트처럼 공개돼요.</span></li>
+          <li><span class="n">3</span><span>다 같이 "이거 누구야?" 추리하고, 정답 공개 후 주인공 인터뷰!</span></li>
+        </ol>
+        <div class="tip">
+          <b>TIP</b> 남들이 절대 모를 것 같은 사실일수록 재밌어요. 예) 사실 나 스카이다이빙 자격증 있음 · 초등학교 때 전국 대회 나감 · 하루 커피 5잔
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin-top:0">TMI 제출</h2>
+        <p class="muted">제출 후 고치고 싶으면 같은 이름으로 다시 제출하면 수정돼요.</p>
+        <form id="submit-form">
+          <input type="text" id="name-input" placeholder="이름 (실명으로!)" autocomplete="off" maxlength="20">
+          <div class="tmi-inputs">
+            <input type="text" id="tmi-1" placeholder="TMI 1" autocomplete="off" maxlength="100">
+            <input type="text" id="tmi-2" placeholder="TMI 2" autocomplete="off" maxlength="100">
+            <input type="text" id="tmi-3" placeholder="TMI 3" autocomplete="off" maxlength="100">
+          </div>
+          <p class="error" id="submit-error"></p>
+          <button class="btn block" type="submit">제출하기</button>
+        </form>
+        <div class="my-tmi hidden" id="my-tmi"></div>
+      </div>
+    </section>
+
+    <section id="game-view" class="card hidden">
+      <h1 id="round-title"></h1>
+      <p class="muted" id="round-sub"></p>
+      <div id="stage"></div>
+    </section>
+  </div>
+  <script src="/tmi.js"></script>
+</body>
+</html>
